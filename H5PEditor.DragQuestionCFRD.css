@@ -2,36 +2,36 @@
   position: relative;
 }
 
-.dragQuestion {
+.dragQuestionCFRD {
   position: relative;
 }
 
-.h5p-dragquestion-editor .field-name-question > .h5p-editor-flex-wrapper {
+.h5p-dragquestioncfrd-editor .field-name-question > .h5p-editor-flex-wrapper {
    display: none;
  }
 
-.dragQuestion .h5peditor-dragnbar {
+.dragQuestionCFRD .h5peditor-dragnbar {
   font-size: 1em;
   background: #f5f5f5;
   border: 1px solid #ccc;
   border-bottom: none;
 }
 
-.dragQuestion .h5p-dragnbar-ul {
+.dragQuestionCFRD .h5p-dragnbar-ul {
   float: none;
   padding: 0;
   margin: 0;
   list-style: none;
 }
 
-.dragQuestion .h5p-dragnbar-ul:after {
+.dragQuestionCFRD .h5p-dragnbar-ul:after {
   visibility: hidden;
   display: block;
   content: "";
   clear: both;
 }
 
-.dragQuestion .h5p-dragnbar-li {
+.dragQuestionCFRD .h5p-dragnbar-li {
   float: left;
   margin: 0;
   padding: 0;
@@ -40,39 +40,39 @@
   position: relative;
 }
 
-.dragQuestion .h5p-dragnbar-li:last-child {
+.dragQuestionCFRD .h5p-dragnbar-li:last-child {
   float:right;
 }
 
 /* Paste button overrides */
-.dragQuestion .h5peditor-dragnbar .h5p-dragnbar-ul .h5p-dragnbar-li .h5p-dragnbar-a.h5p-dragnbar-paste-button {
+.dragQuestionCFRD .h5peditor-dragnbar .h5p-dragnbar-ul .h5p-dragnbar-li .h5p-dragnbar-a.h5p-dragnbar-paste-button {
   padding: 0.2em 0.95em 0.2em 0.55em;
   border-radius: 0.25em;
   border-width: 1px;
 }
-.dragQuestion .h5p-dragnbar-a.h5p-dragnbar-paste-button:before {
+.dragQuestionCFRD .h5p-dragnbar-a.h5p-dragnbar-paste-button:before {
   font-size: 1.5em;
 }
 
-.dragQuestion .h5p-dragnbar-li.disabled {
+.dragQuestionCFRD .h5p-dragnbar-li.disabled {
   opacity: 0.3;
   cursor: auto;
 }
 
-.h5p-dragquestion-editor .h5peditor-dragnbar .h5p-dragnbar-li .h5p-dragnbar-tooltip {
+.h5p-dragquestioncfrd-editor .h5peditor-dragnbar .h5p-dragnbar-li .h5p-dragnbar-tooltip {
   font-size: 0.9em;
 }
 
-.dragQuestion .h5p-dragnbar-li:hover {
+.dragQuestionCFRD .h5p-dragnbar-li:hover {
   background: none;
 }
 
-.dragQuestion .h5p-dragnbar-li:before {
+.dragQuestionCFRD .h5p-dragnbar-li:before {
   top: 44px;
   font-size: 0.88em;
 }
 
-.dragQuestion .h5p-dragnbar-a {
+.dragQuestionCFRD .h5p-dragnbar-a {
   width: 1em;
   line-height: 1.5em;
   text-align: center;
@@ -86,30 +86,30 @@
   height: 1.5em;
 }
 
-.dragQuestion .h5p-dragnbar-a:hover {
+.dragQuestionCFRD .h5p-dragnbar-a:hover {
   text-decoration: none;
   border-color: #999;
 }
 
-.dragQuestion .h5p-dragnbar-a:link, .dragQuestion .h5p-dragnbar-a:visited  {
+.dragQuestionCFRD .h5p-dragnbar-a:link, .dragQuestionCFRD .h5p-dragnbar-a:visited  {
   color: #555;
 }
-.dragQuestion .h5p-dragnbar-a:before {
+.dragQuestionCFRD .h5p-dragnbar-a:before {
   font-family: 'H5PFontAwesome4';
   content: "?";
 }
-.dragQuestion .h5p-dragnbar-a:hover {
+.dragQuestionCFRD .h5p-dragnbar-a:hover {
   text-decoration: none;
 }
-.dragQuestion .h5p-dragnbar-advancedtext-button:before {
+.dragQuestionCFRD .h5p-dragnbar-advancedtext-button:before {
   font-size: 1.125em;
   font-weight: bold;
   content: "T";
 }
-.dragQuestion .h5p-dragnbar-image-button:before {
+.dragQuestionCFRD .h5p-dragnbar-image-button:before {
   content: "\f03e";
 }
-.dragQuestion .h5p-dragnbar-dropzone-button:before {
+.dragQuestionCFRD .h5p-dragnbar-dropzone-button:before {
   content: "\f140";
 }
 
@@ -122,7 +122,7 @@
 .h5peditor-dragquestion.h5p-ready {
   padding: 0;
   background-size: 100% 100%;
-  background-color: #FFFFFF;
+  background-color: var(--dq-canvas-bg, #FFFFFF);
   position: relative;
   border: 1px solid #ccc;
   border-radius: 0;
@@ -150,11 +150,11 @@
 }
 .h5p-dq-element.h5p-draggable {
   border-radius: 0.5em;
-  border: 0.1em solid #c6c6c6;
+  border: 0.1em solid var(--dq-draggable-border, #c6c6c6);
   cursor: pointer;
   position: absolute;
   text-align: center;
-  background: #ddd;
+  background: var(--dq-draggable-bg, #ddd);
   box-shadow: 0 0 0.3em rgba(0,0,0,0.2);
   z-index: 3;
   -webkit-user-select: none;
@@ -172,9 +172,9 @@
   overflow: hidden;
 }
 .h5p-dq-element.h5p-draggable:hover {
-  border: 0.1em solid rgb(212,190,216);
+  border: 0.1em solid var(--dq-draggable-hover-border, #d4bed8);
   color: #663366;
-  background: #edd6e9;
+  background: var(--dq-draggable-hover-bg, #edd6e9);
 }
 
 .h5p-dq-element-inner.h5p-image {
@@ -204,12 +204,12 @@
 .h5p-dq-dz {
   cursor: pointer;
   position: absolute;
-  border: 2px solid rgba(255,255,255,0.7);
+  border: 0.1em solid var(--dq-dropzone-border, rgba(255,255,255,0.7));
   border-radius: 0.5em;
   z-index: 2;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
-  background: rgb(245, 245, 245);
+  background: var(--dq-dropzone-bg, #f5f5f5);
 }
 .h5p-dq-dz:before {
   content: " ";
@@ -222,7 +222,7 @@
   left: -2px;
 }
 
-.h5p-dq-dz.h5p-has-label {
+.h5p-dq-dz.h5p-has-label-outside {
   border-radius: 0 0 0.5em 0.5em;
 }
 .h5p-dq-dz .joubel-tip-container {
@@ -289,23 +289,103 @@ a.h5peditor-fd-button.h5peditor-remove {
 a.h5peditor-fd-button.h5peditor-remove:hover {
   color: #e40000;
 }
-.h5p-dq-dz-label {
-  background: none repeat scroll 0 0 #ddd;
-  margin-bottom: 0.1em;
-  line-height: 1.25em;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+.h5p-dq-dz .h5p-dq-dz-label {
   position: absolute;
-  bottom: 100%;
+  margin: 0;
+  line-height: 1.25em;
+  padding: 0.25em 0.5em;
+  white-space: nowrap;
+  max-width: calc(100% - 0.5em);
+  background: transparent;
+  border-radius: 0.25em;
+  pointer-events: none;
+}
+
+.h5p-dq-dz.h5p-has-label-inside .h5p-dq-dz-label {
+  z-index: 3;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label > div {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top {
+  z-index: 1;
   left: -0.1em;
   right: -0.1em;
-  white-space: nowrap;
+  bottom: 100%;
+  max-width: none;
+  background: #ddd;
   border-radius: 0.5em 0.5em 0 0;
 }
 
-.h5p-dq-dz-label > div {
-  text-overflow: ellipsis;
-  overflow: hidden;
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-top-left {
+  top: 0.25em;
+  left: 0.25em;
+  right: auto;
+  bottom: auto;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-top-center {
+  top: 0.25em;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translateX(-50%);
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-top-right {
+  top: 0.25em;
+  right: 0.25em;
+  left: auto;
+  bottom: auto;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-center-left {
+  top: 50%;
+  left: 0.25em;
+  right: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-center-center {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-center-right {
+  top: 50%;
+  right: 0.25em;
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-bottom-left {
+  bottom: 0.25em;
+  left: 0.25em;
+  right: auto;
+  top: auto;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-bottom-center {
+  bottom: 0.25em;
+  left: 50%;
+  right: auto;
+  top: auto;
+  transform: translateX(-50%);
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-bottom-right {
+  bottom: 0.25em;
+  right: 0.25em;
+  left: auto;
+  top: auto;
 }
 
 .h5peditor-dynamiccheckboxes-select, .h5peditor-dynamiccheckboxes-select > li {
@@ -346,29 +426,29 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   content: '\f046';
 }
 
-.h5p-dragquestion-editor .h5peditor-panes > .field.dragQuestion {
+.h5p-dragquestioncfrd-editor .h5peditor-panes > .field.dragQuestionCFRD {
   background-color: #fff;
   padding: 20px;
 }
 
-.h5p-dragquestion-editor .h5peditor-form {
+.h5p-dragquestioncfrd-editor .h5peditor-form {
   border-radius: 0;
   padding: 0;
   background: #fff;
 }
 
-.h5p-dragquestion-editor .field.wizard > .h5peditor-panes > .group > .content {
+.h5p-dragquestioncfrd-editor .field.wizard > .h5peditor-panes > .group > .content {
   border: 0;
 }
 
-.h5p-dragquestion-editor .field.wizard .h5peditor-tab-settings:before {
+.h5p-dragquestioncfrd-editor .field.wizard .h5peditor-tab-settings:before {
   content: '\e916';
 }
-.h5p-dragquestion-editor .field.wizard .h5peditor-tab-task:before {
+.h5p-dragquestioncfrd-editor .field.wizard .h5peditor-tab-task:before {
   content: '\e991';
 }
 
-.h5p-dragquestion-editor .common {
+.h5p-dragquestioncfrd-editor .common {
   background-color: #FAFBFC;
 }
 
@@ -376,10 +456,10 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   width: 75px;
 }
 
-.h5p-dragquestion-editor .toggle-metadata {
+.h5p-dragquestioncfrd-editor .toggle-metadata {
   top: 1.2em;
 }
 
-.h5p-dragquestion-editor .h5p-editor-dialog.h5p-metadata-wrapper {
+.h5p-dragquestioncfrd-editor .h5p-editor-dialog.h5p-metadata-wrapper {
   left: 3%;
 }

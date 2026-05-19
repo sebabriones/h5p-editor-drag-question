@@ -7,13 +7,13 @@ var H5PEditor = H5PEditor || {};
 
  * @param {jQuery} $
  */
-H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar) {
+H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, DragNBar) {
   /**
    * Must be changed if the semantics for the elements changes.
    * @πvate
    * @type {string}
    */
-  var clipboardKey = 'H5PEditor.DragQuestion';
+  var clipboardKey = 'H5PEditor.DragQuestionCFRD';
 
   /**
    * Initialize interactive video editor.
@@ -70,7 +70,7 @@ H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar
 
     this.elementDropZoneFieldWeight = 5;
     this.elementFields[this.elementDropZoneFieldWeight].options = [];
-    this.dropZoneElementFieldWeight = 6;
+    this.dropZoneElementFieldWeight = 7;
     this.elementOptions = [];
 
     this.parent = parent;
@@ -1021,7 +1021,8 @@ H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar
               backgroundOpacity: 0,
               correctElements: [],
               label: C.getLabel($span.text()),
-              showLabel: false
+              showLabel: false,
+              labelPosition: 'outside-top'
             });
             self.insertDropZone(self.params.dropZones.length - 1);
 
@@ -1316,12 +1317,21 @@ H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar
    */
   C.prototype.updateDropZone = function (dropZone, id) {
     var params = this.params.dropZones[id];
+    var labelPosition = params.labelPosition || 'outside-top';
 
     // Remove old label and add new.
+    dropZone.$dropZone.removeClass('h5p-has-label h5p-has-label-outside h5p-has-label-inside');
     dropZone.$dropZone.children('.h5p-dq-dz-label').remove();
     if (params.showLabel === true) {
-      $('<div class="h5p-dq-dz-label">' + params.label + '</div>').appendTo(dropZone.$dropZone);
+      $('<div class="h5p-dq-dz-label h5p-label-pos-' + labelPosition + '">' + params.label + '</div>').appendTo(dropZone.$dropZone);
       dropZone.$dropZone.addClass('h5p-has-label');
+
+      if (labelPosition === 'outside-top') {
+        dropZone.$dropZone.addClass('h5p-has-label-outside');
+      }
+      else {
+        dropZone.$dropZone.addClass('h5p-has-label-inside');
+      }
     }
     else {
       dropZone.$dropZone.removeClass('h5p-has-label');
@@ -1338,7 +1348,13 @@ H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar
       label: params.label
     };
 
-    C.setOpacity(dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label')), 'background', params.backgroundOpacity);
+    var $opacityTargets = dropZone.$dropZone;
+
+    if (params.showLabel === true && labelPosition === 'outside-top') {
+      $opacityTargets = dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label'));
+    }
+
+    C.setOpacity($opacityTargets, 'background', params.backgroundOpacity);
   };
 
   /**
@@ -1566,7 +1582,7 @@ H5PEditor.widgets.dragQuestion = H5PEditor.DragQuestion = (function ($, DragNBar
    * @returns {@exp;H5PEditor@call;t}
    */
   C.t = function (key, vars) {
-    return H5PEditor.t('H5PEditor.DragQuestion', key, vars);
+    return H5PEditor.t('H5PEditor.DragQuestionCFRD', key, vars);
   };
 
   return C;
