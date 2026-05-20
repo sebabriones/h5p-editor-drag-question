@@ -70,7 +70,7 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
 
     this.elementDropZoneFieldWeight = 5;
     this.elementFields[this.elementDropZoneFieldWeight].options = [];
-    this.dropZoneElementFieldWeight = 7;
+    this.dropZoneElementFieldWeight = C.getDropZoneFieldWeight(this.dropZoneFields, 'correctElements');
     this.elementOptions = [];
 
     this.parent = parent;
@@ -468,6 +468,13 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
     }
 
     this.resize();
+
+    if (H5PEditor.DragQuestionCFRD.cfrdApplyEditorAppearance && this.parent) {
+      H5PEditor.DragQuestionCFRD.cfrdApplyEditorAppearance(this.parent);
+    }
+    else {
+      this.refreshAppearanceStyles();
+    }
   };
 
   /**
@@ -1022,7 +1029,14 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
               correctElements: [],
               label: C.getLabel($span.text()),
               showLabel: false,
-              labelPosition: 'outside-top'
+              labelVisual: {
+                labelDisplayMode: 'label-only',
+                labelPosition: 'outside-top',
+                labelWithIcon: {
+                  iconSource: 'image',
+                  visualScale: 100
+                }
+              }
             });
             self.insertDropZone(self.params.dropZones.length - 1);
 
@@ -1043,6 +1057,151 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
    * @param {String} text
    * @returns {String}
    */
+  /**
+   * @param {Object[]} fields
+   * @param {string} name
+   * @returns {number}
+   */
+  C.getDropZoneFieldWeight = function (fields, name) {
+    for (var i = 0; i < fields.length; i++) {
+      if (fields[i].name === name) {
+        return i;
+      }
+    }
+
+    return 0;
+  };
+
+  /**
+   * @param {Object} params drop zone params
+   * @returns {Object}
+   */
+  C.getFaIconClassAttr = function (zoneIcon) {
+    var icon;
+
+    if (!zoneIcon || !zoneIcon.trim) {
+      return '';
+    }
+
+    icon = zoneIcon.trim();
+
+    if (icon.indexOf('fa ') === 0) {
+      return icon;
+    }
+
+    if (icon.indexOf('fa-') === 0) {
+      return 'fa ' + icon;
+    }
+
+    return 'fa fa-' + icon;
+  };
+
+  C.getZoneIconFromLabelWithIcon = function (withIcon, visual) {
+    var faGroup;
+    var zoneIcon;
+
+    if (!withIcon) {
+      return visual && visual.zoneIcon;
+    }
+
+    faGroup = withIcon.fontawesomeIcon;
+
+    if (typeof faGroup === 'string') {
+      zoneIcon = faGroup.trim();
+    }
+    else if (faGroup && faGroup.zoneIcon !== undefined) {
+      zoneIcon = faGroup.zoneIcon;
+    }
+
+    if (zoneIcon === undefined && withIcon.zoneIcon !== undefined) {
+      zoneIcon = withIcon.zoneIcon;
+    }
+
+    return zoneIcon;
+  };
+
+  C.getLabelVisualParams = function (params) {
+    var visual = params && params.labelVisual;
+    var withIcon;
+    var result;
+
+    if (!visual) {
+      var legacyIconSource = params && params.iconSource;
+      var legacyZoneImage = params && params.zoneImage;
+      var legacyZoneIcon = params && params.zoneIcon;
+
+      return {
+        labelDisplayMode: params && params.labelDisplayMode,
+        labelPosition: params && params.labelPosition,
+        iconSource: C.resolveIconSource(legacyIconSource, legacyZoneImage, legacyZoneIcon),
+        zoneImage: legacyZoneImage,
+        zoneIcon: legacyZoneIcon,
+        visualScale: 100
+      };
+    }
+
+    withIcon = visual.labelWithIcon;
+    result = {
+      labelDisplayMode: visual.labelDisplayMode,
+      labelPosition: visual.labelPosition,
+      iconSource: withIcon && withIcon.iconSource,
+      zoneImage: withIcon && withIcon.zoneImage,
+      zoneIcon: C.getZoneIconFromLabelWithIcon(withIcon, visual),
+      visualScale: withIcon && withIcon.visualScale
+    };
+
+    if (result.iconSource === undefined && visual.iconSource !== undefined) {
+      result.iconSource = visual.iconSource;
+    }
+
+    if (result.zoneImage === undefined && visual.zoneImage !== undefined) {
+      result.zoneImage = visual.zoneImage;
+    }
+
+    result.iconSource = C.resolveIconSource(result.iconSource, result.zoneImage, result.zoneIcon);
+
+    return result;
+  };
+
+  C.normalizeVisualScale = function (scale) {
+    var value = parseInt(scale, 10);
+
+    if (isNaN(value)) {
+      return 100;
+    }
+
+    if (value < 50) {
+      return 50;
+    }
+
+    if (value > 150) {
+      return 150;
+    }
+
+    return value;
+  };
+
+  C.getVisualStackScaleStyle = function (visualScale) {
+    var factor = C.normalizeVisualScale(visualScale) / 100;
+
+    return ' style="--dq-visual-scale: ' + factor + '"';
+  };
+
+  C.resolveIconSource = function (iconSource, zoneImage, zoneIcon) {
+    var hasIcon = zoneIcon && String(zoneIcon).trim() !== '';
+    var hasImage = zoneImage && zoneImage.path;
+
+    if (iconSource === 'fontawesome') {
+      return 'fontawesome';
+    }
+
+    if (hasIcon && !hasImage) {
+      return 'fontawesome';
+    }
+
+    return 'image';
+  };
+
   C.getLabel = function (text) {
     return (text.length > 32 ? text.substr(0, 32) + '...' : text);
   };
@@ -1317,20 +1476,46 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
    */
   C.prototype.updateDropZone = function (dropZone, id) {
     var params = this.params.dropZones[id];
-    var labelPosition = params.labelPosition || 'outside-top';
+    var labelVisual = C.getLabelVisualParams(params);
+    var labelPosition = labelVisual.labelPosition || 'outside-top';
+    var labelDisplayMode = labelVisual.labelDisplayMode === 'label-with-icon' ? 'label-with-icon' : 'label-only';
+    var iconSource = labelVisual.iconSource;
+    var zoneImage = labelVisual.zoneImage;
+    var visualHtml = '';
+    var imgPath;
+    var alt;
+    var faClasses;
 
-    // Remove old label and add new.
-    dropZone.$dropZone.removeClass('h5p-has-label h5p-has-label-outside h5p-has-label-inside');
-    dropZone.$dropZone.children('.h5p-dq-dz-label').remove();
+    // Remove old label visuals and add new.
+    dropZone.$dropZone.removeClass('h5p-has-label h5p-has-label-outside h5p-has-label-inside h5p-has-visual-stack');
+    dropZone.$dropZone.children('.h5p-dq-dz-label, .h5p-dz-visual-stack').remove();
     if (params.showLabel === true) {
-      $('<div class="h5p-dq-dz-label h5p-label-pos-' + labelPosition + '">' + params.label + '</div>').appendTo(dropZone.$dropZone);
-      dropZone.$dropZone.addClass('h5p-has-label');
-
-      if (labelPosition === 'outside-top') {
-        dropZone.$dropZone.addClass('h5p-has-label-outside');
+      if (labelDisplayMode === 'label-with-icon') {
+        alt = $('<div>' + params.label + '</div>').text();
+        if (iconSource === 'fontawesome') {
+          faClasses = C.getFaIconClassAttr(labelVisual.zoneIcon);
+          if (faClasses) {
+            visualHtml += '<span class="h5p-dz-icon h5p-dz-fa ' + faClasses + '" aria-hidden="true"></span>';
+          }
+        }
+        else if (zoneImage !== undefined && zoneImage.path) {
+          imgPath = H5P.getPath(zoneImage.path, H5PEditor.contentId);
+          visualHtml += '<img class="h5p-dz-icon" src="' + imgPath + '" alt="' + alt + '"/>';
+        }
+        visualHtml += '<div class="h5p-dq-dz-label h5p-label-pos-stack-bottom">' + params.label + '</div>';
+        $('<div class="h5p-dz-visual-stack"' + C.getVisualStackScaleStyle(labelVisual.visualScale) + '>' + visualHtml + '</div>').appendTo(dropZone.$dropZone);
+        dropZone.$dropZone.addClass('h5p-has-label h5p-has-visual-stack h5p-has-label-inside');
       }
       else {
-        dropZone.$dropZone.addClass('h5p-has-label-inside');
+        $('<div class="h5p-dq-dz-label h5p-label-pos-' + labelPosition + '">' + params.label + '</div>').appendTo(dropZone.$dropZone);
+        dropZone.$dropZone.addClass('h5p-has-label');
+
+        if (labelPosition === 'outside-top') {
+          dropZone.$dropZone.addClass('h5p-has-label-outside');
+        }
+        else {
+          dropZone.$dropZone.addClass('h5p-has-label-inside');
+        }
       }
     }
     else {
@@ -1350,7 +1535,7 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
 
     var $opacityTargets = dropZone.$dropZone;
 
-    if (params.showLabel === true && labelPosition === 'outside-top') {
+    if (params.showLabel === true && labelDisplayMode === 'label-only' && labelPosition === 'outside-top') {
       $opacityTargets = dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label'));
     }
 
@@ -1397,10 +1582,46 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
    * @param {jQuery} $element
    * @param {Number} opacity
    */
+  C.hasGradientBackground = function ($element) {
+    var bgImage;
+
+    if (!$element || !$element.length) {
+      return false;
+    }
+
+    bgImage = $element.css('backgroundImage');
+
+    return !!(bgImage && bgImage !== 'none' && bgImage.indexOf('gradient') !== -1);
+  };
+
+  C.draggableBordersEnabled = function ($element) {
+    var el;
+    var enabled;
+
+    if (!$element || !$element.length) {
+      return false;
+    }
+
+    el = $element[0];
+
+    if (!el || !window.getComputedStyle) {
+      return false;
+    }
+
+    enabled = window.getComputedStyle(el).getPropertyValue('--dq-draggable-borders-enabled').trim();
+
+    return enabled === '1';
+  };
+
   C.setElementOpacity = function ($element, opacity) {
-    C.setOpacity($element, 'background', opacity);
+    if (!C.hasGradientBackground($element)) {
+      C.setOpacity($element, 'background', opacity);
+    }
     C.setOpacity($element, 'boxShadow', opacity);
-    C.setOpacity($element, 'borderColor', opacity);
+
+    if (C.draggableBordersEnabled($element)) {
+      C.setOpacity($element, 'borderColor', opacity);
+    }
   };
 
   /**
@@ -1417,6 +1638,50 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
 
     for (var i = 0; i < domElements.length; i++) {
       C.setElementOpacity(domElements[i]['$'+type], this.getElementOpacitySetting(elements[i]));
+    }
+  };
+
+  /**
+   * Re-apply drop zone and draggable colors from CSS variables (after appearance change).
+   */
+  C.prototype.refreshAppearanceStyles = function () {
+    var i;
+    var dropZone;
+    var params;
+    var labelVisual;
+    var labelPosition;
+    var labelDisplayMode;
+    var $opacityTargets;
+
+    if (this.dnb === undefined || !this.dropZones || !this.elements) {
+      return;
+    }
+
+    for (i = 0; i < this.dropZones.length; i++) {
+      dropZone = this.dropZones[i];
+      params = this.params.dropZones[i];
+
+      if (!dropZone || !dropZone.$dropZone || !params) {
+        continue;
+      }
+
+      labelVisual = C.getLabelVisualParams(params);
+      labelPosition = labelVisual.labelPosition || 'outside-top';
+      labelDisplayMode = labelVisual.labelDisplayMode === 'label-with-icon' ? 'label-with-icon' : 'label-only';
+      $opacityTargets = dropZone.$dropZone;
+
+      if (params.showLabel === true && labelDisplayMode === 'label-only' && labelPosition === 'outside-top') {
+        $opacityTargets = dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label'));
+      }
+
+      C.setOpacity($opacityTargets, 'background', params.backgroundOpacity);
+      C.setOpacity(dropZone.$dropZone, 'borderColor', params.backgroundOpacity);
+    }
+
+    for (i = 0; i < this.elements.length; i++) {
+      if (this.elements[i] && this.elements[i].$element && this.params.elements[i]) {
+        C.setElementOpacity(this.elements[i].$element, this.getElementOpacitySetting(this.params.elements[i]));
+      }
     }
   };
 
@@ -1444,7 +1709,10 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
    */
   C.setOpacity = function ($element, property, opacity) {
     if (property === 'background') {
-      // Set both color and gradient.
+      if (C.hasGradientBackground($element)) {
+        return;
+      }
+
       C.setOpacity($element, 'backgroundColor', opacity);
       C.setOpacity($element, 'backgroundImage', opacity);
       return;

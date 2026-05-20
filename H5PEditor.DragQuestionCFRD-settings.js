@@ -15,10 +15,15 @@
     dropZoneBackground: '#f5f5f5',
     dropZoneBorder: '#666666',
     dropZoneHoverBackground: '#edd6e9',
+    dropZoneHoverBorder: '#666666',
+    dropZoneLabelColor: '#333333',
+    zoneIconColor: '#333333',
     draggableBackground: '#dddddd',
     draggableBorder: '#c6c6c6',
+    draggableColor: '#333333',
     draggableHoverBackground: '#edd6e9',
     draggableHoverBorder: '#d4bed8',
+    draggableHoverColor: '#663366',
     draggableDroppedBackground: '#cee0f4',
     draggableDroppedBorder: '#a9c3d0',
     draggableDroppedColor: '#1a4473',
@@ -27,18 +32,147 @@
     draggableCorrectColor: '#255c41',
     draggableWrongBackground: '#f7d0d0',
     draggableWrongBorder: '#f7d0d0',
-    draggableWrongColor: '#b71c1c'
+    draggableWrongColor: '#b71c1c',
+    draggableBorderWidth: '0',
+    draggableBorderStyle: 'none',
+    draggableBordersEnabled: '0'
   };
+
+  var VALID_BORDER_STYLES = ['solid', 'dashed', 'dotted', 'double'];
+
+  var BORDER_WIDTH_MAX = 0.5;
+
+  var DROP_ZONE_COLOR_KEYS = [
+    'dropZoneBackground',
+    'dropZoneBorder',
+    'dropZoneHoverBackground',
+    'dropZoneHoverBorder',
+    'dropZoneLabelColor',
+    'zoneIconColor'
+  ];
+
+  var DRAGGABLE_BORDER_COLOR_KEYS = [
+    'draggableBorder',
+    'draggableHoverBorder',
+    'draggableDroppedBorder',
+    'draggableCorrectBorder',
+    'draggableWrongBorder'
+  ];
+
+  var DRAGGABLE_TEXT_COLOR_KEYS = [
+    'draggableColor',
+    'draggableHoverColor',
+    'draggableDroppedColor',
+    'draggableCorrectColor',
+    'draggableWrongColor'
+  ];
+
+  var DRAGGABLE_BACKGROUND_KEYS = [
+    'draggableBackground',
+    'draggableHoverBackground',
+    'draggableDroppedBackground',
+    'draggableCorrectBackground',
+    'draggableWrongBackground'
+  ];
+
+  var DRAGGABLE_GRADIENT_STATES = [
+    {
+      solidKey: 'draggableBackground',
+      stateKey: 'normal',
+      legacyFillKey: 'draggableBackgroundFill',
+      defaults: { colorStart: '#dddddd', colorEnd: '#bbbbbb' }
+    },
+    {
+      solidKey: 'draggableHoverBackground',
+      stateKey: 'hover',
+      legacyFillKey: 'draggableHoverBackgroundFill',
+      defaults: { colorStart: '#edd6e9', colorEnd: '#d4bed8' }
+    },
+    {
+      solidKey: 'draggableDroppedBackground',
+      stateKey: 'dropped',
+      legacyFillKey: 'draggableDroppedBackgroundFill',
+      defaults: { colorStart: '#cee0f4', colorEnd: '#a9c3d0' }
+    },
+    {
+      solidKey: 'draggableCorrectBackground',
+      stateKey: 'correct',
+      legacyFillKey: 'draggableCorrectBackgroundFill',
+      defaults: { colorStart: '#9dd8bb', colorEnd: '#7bc9a8' }
+    },
+    {
+      solidKey: 'draggableWrongBackground',
+      stateKey: 'wrong',
+      legacyFillKey: 'draggableWrongBackgroundFill',
+      defaults: { colorStart: '#f7d0d0', colorEnd: '#e8a8a8' }
+    }
+  ];
+
+  /** Fields always mounted in the editor (not behind showWhen). */
+  var APPEARANCE_FOLLOW_PATHS_ALWAYS = [
+    'settings/appearance/canvasBackground',
+    'settings/appearance/dropZoneColors/dropZoneBackground',
+    'settings/appearance/dropZoneColors/dropZoneBorder',
+    'settings/appearance/dropZoneColors/dropZoneHoverBackground',
+    'settings/appearance/dropZoneColors/dropZoneHoverBorder',
+    'settings/appearance/dropZoneColors/dropZoneLabelColor',
+    'settings/appearance/dropZoneColors/zoneIconColor',
+    'settings/appearance/draggableColors/draggableColor',
+    'settings/appearance/draggableColors/draggableHoverColor',
+    'settings/appearance/draggableColors/draggableDroppedColor',
+    'settings/appearance/draggableColors/draggableCorrectColor',
+    'settings/appearance/draggableColors/draggableWrongColor'
+  ];
+
+  /** Mounted only when useGradientBackground is false. */
+  var APPEARANCE_FOLLOW_PATHS_SOLID = [
+    'settings/appearance/draggableColors/solidBackgrounds/draggableBackground',
+    'settings/appearance/draggableColors/solidBackgrounds/draggableHoverBackground',
+    'settings/appearance/draggableColors/solidBackgrounds/draggableDroppedBackground',
+    'settings/appearance/draggableColors/solidBackgrounds/draggableCorrectBackground',
+    'settings/appearance/draggableColors/solidBackgrounds/draggableWrongBackground'
+  ];
+
+  /** Mounted only when useGradientBackground is true. */
+  var APPEARANCE_FOLLOW_PATHS_GRADIENT = [
+    'settings/appearance/draggableColors/gradientBackgrounds/gradientAngle',
+    'settings/appearance/draggableColors/gradientBackgrounds/normal/colorStart',
+    'settings/appearance/draggableColors/gradientBackgrounds/normal/colorEnd',
+    'settings/appearance/draggableColors/gradientBackgrounds/hover/colorStart',
+    'settings/appearance/draggableColors/gradientBackgrounds/hover/colorEnd',
+    'settings/appearance/draggableColors/gradientBackgrounds/dropped/colorStart',
+    'settings/appearance/draggableColors/gradientBackgrounds/dropped/colorEnd',
+    'settings/appearance/draggableColors/gradientBackgrounds/correct/colorStart',
+    'settings/appearance/draggableColors/gradientBackgrounds/correct/colorEnd',
+    'settings/appearance/draggableColors/gradientBackgrounds/wrong/colorStart',
+    'settings/appearance/draggableColors/gradientBackgrounds/wrong/colorEnd'
+  ];
+
+  /** Mounted only when useDraggableBorder is true. */
+  var APPEARANCE_FOLLOW_PATHS_BORDER = [
+    'settings/appearance/draggableColors/borderSettings/borderStyle',
+    'settings/appearance/draggableColors/borderSettings/borderWidth',
+    'settings/appearance/draggableColors/borderSettings/borderColors/draggableBorder',
+    'settings/appearance/draggableColors/borderSettings/borderColors/draggableHoverBorder',
+    'settings/appearance/draggableColors/borderSettings/borderColors/draggableDroppedBorder',
+    'settings/appearance/draggableColors/borderSettings/borderColors/draggableCorrectBorder',
+    'settings/appearance/draggableColors/borderSettings/borderColors/draggableWrongBorder'
+  ];
 
   var APPEARANCE_CSS_VARS = {
     canvasBackground: '--dq-canvas-bg',
     dropZoneBackground: '--dq-dropzone-bg',
     dropZoneBorder: '--dq-dropzone-border',
     dropZoneHoverBackground: '--dq-dropzone-hover-bg',
+    dropZoneHoverBorder: '--dq-dropzone-hover-border',
+    dropZoneLabelColor: '--dq-dropzone-label-color',
+    zoneIconColor: '--dq-zone-icon-color',
     draggableBackground: '--dq-draggable-bg',
     draggableBorder: '--dq-draggable-border',
+    draggableColor: '--dq-draggable-color',
     draggableHoverBackground: '--dq-draggable-hover-bg',
     draggableHoverBorder: '--dq-draggable-hover-border',
+    draggableHoverColor: '--dq-draggable-hover-color',
     draggableDroppedBackground: '--dq-draggable-dropped-bg',
     draggableDroppedBorder: '--dq-draggable-dropped-border',
     draggableDroppedColor: '--dq-draggable-dropped-color',
@@ -47,7 +181,10 @@
     draggableCorrectColor: '--dq-draggable-correct-color',
     draggableWrongBackground: '--dq-draggable-wrong-bg',
     draggableWrongBorder: '--dq-draggable-wrong-border',
-    draggableWrongColor: '--dq-draggable-wrong-color'
+    draggableWrongColor: '--dq-draggable-wrong-color',
+    draggableBorderWidth: '--dq-draggable-border-width',
+    draggableBorderStyle: '--dq-draggable-border-style',
+    draggableBordersEnabled: '--dq-draggable-borders-enabled'
   };
 
   function normalizeScale(value) {
@@ -88,6 +225,48 @@
 
   function getSettingsGroup(questionParent) {
     return H5PEditor.findField('settings', questionParent);
+  }
+
+  /**
+   * Register followField only when the field exists (showWhen may unmount branches).
+   *
+   * @param {Object} questionParent
+   * @param {string} path
+   * @param {Function} callback
+   */
+  function safeFollowField(questionParent, path, callback) {
+    var field;
+
+    try {
+      field = H5PEditor.findField(path, questionParent);
+    }
+    catch (err) {
+      return;
+    }
+
+    if (!field) {
+      return;
+    }
+
+    try {
+      H5PEditor.followField(questionParent, path, callback);
+    }
+    catch (err) {
+      // Field removed by showWhen after findField; ignore.
+    }
+  }
+
+  /**
+   * @param {Object} questionParent
+   * @param {string[]} paths
+   * @param {Function} callback
+   */
+  function safeFollowFields(questionParent, paths, callback) {
+    var i;
+
+    for (i = 0; i < paths.length; i++) {
+      safeFollowField(questionParent, paths[i], callback);
+    }
   }
 
   function getSizeField(questionParent) {
@@ -222,9 +401,238 @@
     });
   }
 
+  function normalizeGradientAngle(angle, fallback) {
+    var n = parseInt(angle, 10);
+
+    if (isNaN(n)) {
+      return fallback;
+    }
+
+    if (n < 0) {
+      return 0;
+    }
+
+    if (n > 360) {
+      return 360;
+    }
+
+    return n;
+  }
+
+  function sanitizeGradientColor(color, fallback) {
+    if (!color || typeof color !== 'string') {
+      return fallback;
+    }
+
+    var c = color.trim();
+
+    if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(c)) {
+      return c;
+    }
+
+    if (/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*[\d.]+)?\s*\)$/.test(c)) {
+      return c;
+    }
+
+    return fallback;
+  }
+
+  function buildLinearGradientFromState(stateColors, defaults, angle) {
+    var start;
+    var end;
+
+    stateColors = stateColors || {};
+    start = sanitizeGradientColor(stateColors.colorStart, defaults.colorStart);
+    end = sanitizeGradientColor(stateColors.colorEnd, defaults.colorEnd);
+
+    return 'linear-gradient(' + angle + 'deg, ' + start + ' 0%, ' + end + ' 100%)';
+  }
+
+  function usesLegacyPerStateGradient(appearance) {
+    var i;
+    var fill;
+
+    if (!appearance) {
+      return false;
+    }
+
+    for (i = 0; i < DRAGGABLE_GRADIENT_STATES.length; i++) {
+      fill = appearance[DRAGGABLE_GRADIENT_STATES[i].legacyFillKey];
+
+      if (fill && fill.useGradient === true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function getLegacyGlobalAngle(appearance) {
+    var i;
+    var fill;
+    var gc;
+
+    if (!appearance) {
+      return 180;
+    }
+
+    for (i = 0; i < DRAGGABLE_GRADIENT_STATES.length; i++) {
+      fill = appearance[DRAGGABLE_GRADIENT_STATES[i].legacyFillKey];
+
+      if (fill && fill.useGradient === true && fill.gradientColors) {
+        gc = fill.gradientColors;
+
+        if (gc.angle !== undefined && gc.angle !== null && gc.angle !== '') {
+          return normalizeGradientAngle(gc.angle, 180);
+        }
+      }
+    }
+
+    return 180;
+  }
+
+  function formatBorderWidthEm(width, fallback) {
+    var n = parseFloat(width);
+
+    if (isNaN(n)) {
+      n = fallback;
+    }
+
+    if (n < 0) {
+      n = 0;
+    }
+
+    if (n > BORDER_WIDTH_MAX) {
+      n = BORDER_WIDTH_MAX;
+    }
+
+    return n + 'em';
+  }
+
+  function normalizeBorderStyle(style) {
+    if (style && VALID_BORDER_STYLES.indexOf(style) !== -1) {
+      return style;
+    }
+
+    return 'solid';
+  }
+
+  function applyDraggableBorderAppearance(draggable, flat) {
+    var borderSettings;
+    var borderColors;
+    var useBorder;
+
+    draggable = draggable || {};
+    useBorder = draggable.useDraggableBorder === true;
+    flat.useDraggableBorder = useBorder;
+    flat.draggableBordersEnabled = useBorder ? '1' : '0';
+
+    if (!useBorder) {
+      flat.draggableBorderWidth = '0';
+      flat.draggableBorderStyle = 'none';
+      return;
+    }
+
+    borderSettings = draggable.borderSettings || {};
+    flat.draggableBorderWidth = formatBorderWidthEm(borderSettings.borderWidth, 0.1);
+    flat.draggableBorderStyle = normalizeBorderStyle(borderSettings.borderStyle);
+
+    borderColors = borderSettings.borderColors || borderSettings;
+    copyDefinedKeys(flat, borderColors, DRAGGABLE_BORDER_COLOR_KEYS);
+  }
+
+  function copyDefinedKeys(target, source, keys) {
+    var i;
+    var key;
+    var value;
+
+    if (!source) {
+      return;
+    }
+
+    for (i = 0; i < keys.length; i++) {
+      key = keys[i];
+      value = source[key];
+
+      if (value !== undefined && value !== null && value !== '') {
+        target[key] = value;
+      }
+    }
+  }
+
+  function flattenAppearance(appearance) {
+    var flat = {};
+    var draggable;
+    var dropZone;
+    var useGradient;
+    var gradientBackgrounds;
+    var solidBackgrounds;
+    var angle;
+    var i;
+    var spec;
+    var stateColors;
+    var legacyFill;
+    var bgKey;
+
+    if (!appearance) {
+      return flat;
+    }
+
+    if (appearance.canvasBackground) {
+      flat.canvasBackground = appearance.canvasBackground;
+    }
+
+    dropZone = appearance.dropZoneColors || appearance;
+    copyDefinedKeys(flat, dropZone, DROP_ZONE_COLOR_KEYS);
+
+    draggable = appearance.draggableColors || appearance;
+    copyDefinedKeys(flat, draggable, DRAGGABLE_TEXT_COLOR_KEYS);
+    applyDraggableBorderAppearance(draggable, flat);
+
+    useGradient = draggable.useGradientBackground === true || usesLegacyPerStateGradient(appearance);
+
+    if (useGradient) {
+      gradientBackgrounds = draggable.gradientBackgrounds || {};
+      angle = normalizeGradientAngle(gradientBackgrounds.gradientAngle, getLegacyGlobalAngle(appearance));
+
+      for (i = 0; i < DRAGGABLE_GRADIENT_STATES.length; i++) {
+        spec = DRAGGABLE_GRADIENT_STATES[i];
+        stateColors = gradientBackgrounds[spec.stateKey];
+        legacyFill = appearance[spec.legacyFillKey];
+
+        if ((!stateColors || (!stateColors.colorStart && !stateColors.colorEnd)) &&
+            legacyFill && legacyFill.useGradient === true && legacyFill.gradientColors) {
+          stateColors = legacyFill.gradientColors;
+        }
+
+        flat[spec.solidKey] = buildLinearGradientFromState(stateColors, spec.defaults, angle);
+      }
+    }
+    else {
+      solidBackgrounds = draggable.solidBackgrounds || {};
+
+      for (i = 0; i < DRAGGABLE_BACKGROUND_KEYS.length; i++) {
+        bgKey = DRAGGABLE_BACKGROUND_KEYS[i];
+
+        if (solidBackgrounds[bgKey] !== undefined && solidBackgrounds[bgKey] !== null && solidBackgrounds[bgKey] !== '') {
+          flat[bgKey] = solidBackgrounds[bgKey];
+        }
+        else if (draggable[bgKey] !== undefined && draggable[bgKey] !== null && draggable[bgKey] !== '') {
+          flat[bgKey] = draggable[bgKey];
+        }
+        else if (appearance[bgKey] !== undefined && appearance[bgKey] !== null && appearance[bgKey] !== '') {
+          flat[bgKey] = appearance[bgKey];
+        }
+      }
+    }
+
+    return flat;
+  }
+
   function mergeAppearance(appearance) {
     var merged = {};
     var key;
+    var flat;
 
     for (key in APPEARANCE_DEFAULTS) {
       if (Object.prototype.hasOwnProperty.call(APPEARANCE_DEFAULTS, key)) {
@@ -236,12 +644,14 @@
       return merged;
     }
 
+    flat = flattenAppearance(appearance);
+
     for (key in APPEARANCE_DEFAULTS) {
       if (Object.prototype.hasOwnProperty.call(APPEARANCE_DEFAULTS, key) &&
-          appearance[key] !== undefined &&
-          appearance[key] !== null &&
-          appearance[key] !== '') {
-        merged[key] = appearance[key];
+          flat[key] !== undefined &&
+          flat[key] !== null &&
+          flat[key] !== '') {
+        merged[key] = flat[key];
       }
     }
 
@@ -255,7 +665,7 @@
     var el;
 
     if (!$container || !$container.length) {
-      return;
+      return merged;
     }
 
     for (i = 0; i < $container.length; i++) {
@@ -271,23 +681,49 @@
         }
       }
     }
+
+    return merged;
+  }
+
+  function refreshEditorElementAppearance(questionParent) {
+    var taskEditor = H5PEditor.findField('task', questionParent);
+
+    if (taskEditor && typeof taskEditor.refreshAppearanceStyles === 'function') {
+      taskEditor.refreshAppearanceStyles();
+    }
   }
 
   function applyEditorAppearance(questionParent) {
     var settings = getSettingsGroup(questionParent);
     var taskWidget = H5PEditor.findField('task', questionParent);
     var appearance;
+    var merged;
 
     if (!taskWidget || !taskWidget.$editor || !taskWidget.$editor.length) {
       return;
     }
 
     appearance = settings && settings.params && settings.params.appearance;
-    applyAppearanceVars(taskWidget.$editor, appearance);
+    merged = applyAppearanceVars(taskWidget.$editor, appearance);
+
+    if (merged && merged.canvasBackground) {
+      taskWidget.$editor.css('backgroundColor', merged.canvasBackground);
+    }
+
+    refreshEditorElementAppearance(questionParent);
   }
 
   function setupAppearanceSync(questionParent) {
-    var appearanceFollowCount = 0;
+    var i;
+    var j;
+    var onAppearanceChange;
+    var onToggleChange;
+    var legacyFillSuffixes = [
+      'useGradient',
+      'gradientColors/colorStart',
+      'gradientColors/colorEnd',
+      'gradientColors/angle'
+    ];
 
     if (!questionParent || questionParent._cfrdAppearanceSyncSetup) {
       return;
@@ -295,16 +731,42 @@
 
     questionParent._cfrdAppearanceSyncSetup = true;
 
-    H5PEditor.followField(questionParent, 'settings/appearance', function () {
-      appearanceFollowCount += 1;
-
-      if (appearanceFollowCount === 1) {
-        applyEditorAppearance(questionParent);
-        return;
-      }
-
+    onAppearanceChange = function () {
       applyEditorAppearance(questionParent);
-    });
+    };
+
+    onToggleChange = function () {
+      applyEditorAppearance(questionParent);
+      safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_SOLID, onAppearanceChange);
+      safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_GRADIENT, onAppearanceChange);
+      safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
+    };
+
+    safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_ALWAYS, onAppearanceChange);
+    safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_SOLID, onAppearanceChange);
+    safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_GRADIENT, onAppearanceChange);
+    safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
+
+    safeFollowField(
+      questionParent,
+      'settings/appearance/draggableColors/useGradientBackground',
+      onToggleChange
+    );
+    safeFollowField(
+      questionParent,
+      'settings/appearance/draggableColors/useDraggableBorder',
+      onToggleChange
+    );
+
+    for (i = 0; i < DRAGGABLE_GRADIENT_STATES.length; i++) {
+      for (j = 0; j < legacyFillSuffixes.length; j++) {
+        safeFollowField(
+          questionParent,
+          'settings/appearance/' + DRAGGABLE_GRADIENT_STATES[i].legacyFillKey + '/' + legacyFillSuffixes[j],
+          onAppearanceChange
+        );
+      }
+    }
   }
 
   function setupTaskSizeScaleSync(questionParent) {
@@ -343,8 +805,18 @@
     });
   }
 
+  function scheduleApplyEditorAppearance(questionParent) {
+    setTimeout(function () {
+      applyEditorAppearance(questionParent);
+    }, 0);
+    setTimeout(function () {
+      applyEditorAppearance(questionParent);
+    }, 150);
+  }
+
   function patchDragQuestionWidget() {
     var Original = H5PEditor.DragQuestionCFRD;
+    var originalSetActive;
 
     if (!Original || Original._cfrdSizeSyncPatched) {
       return;
@@ -357,6 +829,15 @@
     };
 
     H5PEditor.DragQuestionCFRD.prototype = Original.prototype;
+    originalSetActive = Original.prototype.setActive;
+    H5PEditor.DragQuestionCFRD.prototype.setActive = function () {
+      var parent = this.parent;
+
+      originalSetActive.call(this);
+      scheduleApplyEditorAppearance(parent);
+    };
+
+    H5PEditor.DragQuestionCFRD.cfrdApplyEditorAppearance = applyEditorAppearance;
     H5PEditor.DragQuestionCFRD._cfrdSizeSyncPatched = true;
     H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD;
   }
