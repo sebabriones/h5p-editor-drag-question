@@ -14,10 +14,15 @@
     canvasBackground: '#ffffff',
     dropZoneBackground: '#f5f5f5',
     dropZoneBorder: '#666666',
+    dropZoneBorderRadius: '0.25em',
+    dropZoneBorderWidth: '0.1em',
+    dropZoneBorderStyle: 'solid',
     dropZoneHoverBackground: '#edd6e9',
     dropZoneHoverBorder: '#666666',
+    dropZoneHoverBorderStyle: 'solid',
     dropZoneLabelColor: '#333333',
     zoneIconColor: '#333333',
+    dropZoneBordersEnabled: '1',
     draggableBackground: '#dddddd',
     draggableBorder: '#c6c6c6',
     draggableColor: '#333333',
@@ -33,6 +38,7 @@
     draggableWrongBackground: '#f7d0d0',
     draggableWrongBorder: '#f7d0d0',
     draggableWrongColor: '#b71c1c',
+    draggableBorderRadius: '0.25em',
     draggableBorderWidth: '0',
     draggableBorderStyle: 'none',
     draggableBordersEnabled: '0'
@@ -42,14 +48,23 @@
 
   var BORDER_WIDTH_MAX = 0.5;
 
-  var DROP_ZONE_COLOR_KEYS = [
+  var BORDER_RADIUS_DEFAULT = 0.25;
+
+  var BORDER_RADIUS_MAX = 2;
+
+  var DROP_ZONE_BASE_KEYS = [
     'dropZoneBackground',
-    'dropZoneBorder',
     'dropZoneHoverBackground',
-    'dropZoneHoverBorder',
     'dropZoneLabelColor',
     'zoneIconColor'
   ];
+
+  var DROP_ZONE_BORDER_COLOR_KEYS = [
+    'dropZoneBorder',
+    'dropZoneHoverBorder'
+  ];
+
+  var DROP_ZONE_COLOR_KEYS = DROP_ZONE_BASE_KEYS.concat(DROP_ZONE_BORDER_COLOR_KEYS);
 
   var DRAGGABLE_BORDER_COLOR_KEYS = [
     'draggableBorder',
@@ -112,11 +127,12 @@
   var APPEARANCE_FOLLOW_PATHS_ALWAYS = [
     'settings/appearance/canvasBackground',
     'settings/appearance/dropZoneColors/dropZoneBackground',
-    'settings/appearance/dropZoneColors/dropZoneBorder',
     'settings/appearance/dropZoneColors/dropZoneHoverBackground',
-    'settings/appearance/dropZoneColors/dropZoneHoverBorder',
+    'settings/appearance/dropZoneBorderRadius',
+    'settings/appearance/dropZoneColors/useDropZoneBorder',
     'settings/appearance/dropZoneColors/dropZoneLabelColor',
     'settings/appearance/dropZoneColors/zoneIconColor',
+    'settings/appearance/draggableBorderRadius',
     'settings/appearance/draggableColors/draggableColor',
     'settings/appearance/draggableColors/draggableHoverColor',
     'settings/appearance/draggableColors/draggableDroppedColor',
@@ -159,14 +175,28 @@
     'settings/appearance/draggableColors/borderSettings/borderColors/draggableWrongBorder'
   ];
 
+  /** Mounted only when useDropZoneBorder is true. */
+  var APPEARANCE_FOLLOW_PATHS_DROP_ZONE_BORDER = [
+    'settings/appearance/dropZoneColors/borderSettings/borderWidth',
+    'settings/appearance/dropZoneColors/borderSettings/normal/borderStyle',
+    'settings/appearance/dropZoneColors/borderSettings/normal/borderColor',
+    'settings/appearance/dropZoneColors/borderSettings/hover/borderStyle',
+    'settings/appearance/dropZoneColors/borderSettings/hover/borderColor'
+  ];
+
   var APPEARANCE_CSS_VARS = {
     canvasBackground: '--dq-canvas-bg',
     dropZoneBackground: '--dq-dropzone-bg',
     dropZoneBorder: '--dq-dropzone-border',
+    dropZoneBorderRadius: '--dq-dropzone-border-radius',
+    dropZoneBorderWidth: '--dq-dropzone-border-width',
+    dropZoneBorderStyle: '--dq-dropzone-border-style',
     dropZoneHoverBackground: '--dq-dropzone-hover-bg',
     dropZoneHoverBorder: '--dq-dropzone-hover-border',
+    dropZoneHoverBorderStyle: '--dq-dropzone-hover-border-style',
     dropZoneLabelColor: '--dq-dropzone-label-color',
     zoneIconColor: '--dq-zone-icon-color',
+    dropZoneBordersEnabled: '--dq-dropzone-borders-enabled',
     draggableBackground: '--dq-draggable-bg',
     draggableBorder: '--dq-draggable-border',
     draggableColor: '--dq-draggable-color',
@@ -182,6 +212,7 @@
     draggableWrongBackground: '--dq-draggable-wrong-bg',
     draggableWrongBorder: '--dq-draggable-wrong-border',
     draggableWrongColor: '--dq-draggable-wrong-color',
+    draggableBorderRadius: '--dq-draggable-border-radius',
     draggableBorderWidth: '--dq-draggable-border-width',
     draggableBorderStyle: '--dq-draggable-border-style',
     draggableBordersEnabled: '--dq-draggable-borders-enabled'
@@ -509,6 +540,24 @@
     return n + 'em';
   }
 
+  function formatBorderRadiusEm(radius, fallback) {
+    var n = parseFloat(radius);
+
+    if (isNaN(n)) {
+      n = fallback;
+    }
+
+    if (n < 0) {
+      n = 0;
+    }
+
+    if (n > BORDER_RADIUS_MAX) {
+      n = BORDER_RADIUS_MAX;
+    }
+
+    return n + 'em';
+  }
+
   function normalizeBorderStyle(style) {
     if (style && VALID_BORDER_STYLES.indexOf(style) !== -1) {
       return style;
@@ -517,13 +566,75 @@
     return 'solid';
   }
 
-  function applyDraggableBorderAppearance(draggable, flat) {
+  function applyDropZoneBorderAppearance(dropZone, appearance, flat) {
+    var borderSettings;
+    var normal;
+    var hover;
+    var useBorder;
+    var radius;
+
+    dropZone = dropZone || {};
+    appearance = appearance || {};
+    radius = appearance.dropZoneBorderRadius;
+
+    if (radius === undefined || radius === null || radius === '') {
+      radius = dropZone.borderRadius;
+    }
+
+    flat.dropZoneBorderRadius = formatBorderRadiusEm(radius, BORDER_RADIUS_DEFAULT);
+    useBorder = dropZone.useDropZoneBorder === undefined ?
+      true :
+      isTruthy(dropZone.useDropZoneBorder);
+
+    flat.useDropZoneBorder = useBorder;
+    flat.dropZoneBordersEnabled = useBorder ? '1' : '0';
+
+    if (!useBorder) {
+      flat.dropZoneBorderWidth = '0';
+      flat.dropZoneBorderStyle = 'none';
+      flat.dropZoneHoverBorderStyle = 'none';
+      return;
+    }
+
+    borderSettings = dropZone.borderSettings || {};
+    normal = borderSettings.normal || {};
+    hover = borderSettings.hover || {};
+
+    flat.dropZoneBorderWidth = formatBorderWidthEm(borderSettings.borderWidth, 0.1);
+    flat.dropZoneBorderStyle = normalizeBorderStyle(normal.borderStyle);
+    flat.dropZoneHoverBorderStyle = normalizeBorderStyle(hover.borderStyle || normal.borderStyle);
+
+    if (normal.borderColor !== undefined && normal.borderColor !== null && normal.borderColor !== '') {
+      flat.dropZoneBorder = normal.borderColor;
+    }
+    else if (dropZone.dropZoneBorder !== undefined && dropZone.dropZoneBorder !== null && dropZone.dropZoneBorder !== '') {
+      flat.dropZoneBorder = dropZone.dropZoneBorder;
+    }
+
+    if (hover.borderColor !== undefined && hover.borderColor !== null && hover.borderColor !== '') {
+      flat.dropZoneHoverBorder = hover.borderColor;
+    }
+    else if (dropZone.dropZoneHoverBorder !== undefined && dropZone.dropZoneHoverBorder !== null && dropZone.dropZoneHoverBorder !== '') {
+      flat.dropZoneHoverBorder = dropZone.dropZoneHoverBorder;
+    }
+  }
+
+  function applyDraggableBorderAppearance(draggable, appearance, flat) {
     var borderSettings;
     var borderColors;
     var useBorder;
+    var radius;
 
     draggable = draggable || {};
-    useBorder = draggable.useDraggableBorder === true;
+    appearance = appearance || {};
+    radius = appearance.draggableBorderRadius;
+
+    if (radius === undefined || radius === null || radius === '') {
+      radius = draggable.borderRadius;
+    }
+
+    flat.draggableBorderRadius = formatBorderRadiusEm(radius, BORDER_RADIUS_DEFAULT);
+    useBorder = isTruthy(draggable.useDraggableBorder);
     flat.useDraggableBorder = useBorder;
     flat.draggableBordersEnabled = useBorder ? '1' : '0';
 
@@ -583,13 +694,14 @@
     }
 
     dropZone = appearance.dropZoneColors || appearance;
-    copyDefinedKeys(flat, dropZone, DROP_ZONE_COLOR_KEYS);
+    copyDefinedKeys(flat, dropZone, DROP_ZONE_BASE_KEYS);
+    applyDropZoneBorderAppearance(dropZone, appearance, flat);
 
     draggable = appearance.draggableColors || appearance;
     copyDefinedKeys(flat, draggable, DRAGGABLE_TEXT_COLOR_KEYS);
-    applyDraggableBorderAppearance(draggable, flat);
+    applyDraggableBorderAppearance(draggable, appearance, flat);
 
-    useGradient = draggable.useGradientBackground === true || usesLegacyPerStateGradient(appearance);
+    useGradient = isTruthy(draggable.useGradientBackground) || usesLegacyPerStateGradient(appearance);
 
     if (useGradient) {
       gradientBackgrounds = draggable.gradientBackgrounds || {};
@@ -737,16 +849,23 @@
 
     onToggleChange = function () {
       applyEditorAppearance(questionParent);
+      safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_DROP_ZONE_BORDER, onAppearanceChange);
       safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_SOLID, onAppearanceChange);
       safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_GRADIENT, onAppearanceChange);
       safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
     };
 
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_ALWAYS, onAppearanceChange);
+    safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_DROP_ZONE_BORDER, onAppearanceChange);
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_SOLID, onAppearanceChange);
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_GRADIENT, onAppearanceChange);
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
 
+    safeFollowField(
+      questionParent,
+      'settings/appearance/dropZoneColors/useDropZoneBorder',
+      onToggleChange
+    );
     safeFollowField(
       questionParent,
       'settings/appearance/draggableColors/useGradientBackground',

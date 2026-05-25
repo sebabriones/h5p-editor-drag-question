@@ -149,7 +149,7 @@
   padding: 0.25em 0.5em;
 }
 .h5p-dq-element.h5p-draggable {
-  border-radius: 0.5em;
+  border-radius: var(--dq-draggable-border-radius, 0.25em);
   border-width: var(--dq-draggable-border-width, 0);
   border-style: var(--dq-draggable-border-style, none);
   border-color: var(--dq-draggable-border, transparent);
@@ -207,26 +207,25 @@
 .h5p-dq-dz {
   cursor: pointer;
   position: absolute;
-  border: 0.1em solid var(--dq-dropzone-border, rgba(255,255,255,0.7));
-  border-radius: 0.5em;
+  border-width: var(--dq-dropzone-border-width, 0.1em);
+  border-style: var(--dq-dropzone-border-style, solid);
+  border-color: var(--dq-dropzone-border, rgba(255,255,255,0.7));
+  border-radius: var(--dq-dropzone-border-radius, 0.25em);
   z-index: 2;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   background: var(--dq-dropzone-bg, #f5f5f5);
 }
-.h5p-dq-dz:before {
-  content: " ";
-  display: block;
-  position: absolute;
-  border: 2px dashed rgba(0, 0, 0, 0.7);
-  width: 100%;
-  height: 100%;
-  top: -2px;
-  left: -2px;
+
+.h5p-dq-dz:hover,
+.h5p-dq-dz.h5p-over {
+  background: var(--dq-dropzone-hover-bg, #edd6e9);
+  border-style: var(--dq-dropzone-hover-border-style, var(--dq-dropzone-border-style, solid));
+  border-color: var(--dq-dropzone-hover-border, var(--dq-dropzone-border, rgba(255,255,255,0.7)));
 }
 
 .h5p-dq-dz.h5p-has-label-outside {
-  border-radius: 0 0 0.5em 0.5em;
+  border-radius: 0 0 var(--dq-dropzone-border-radius, 0.25em) var(--dq-dropzone-border-radius, 0.25em);
 }
 .h5p-dq-dz .joubel-tip-container {
   position: absolute;
