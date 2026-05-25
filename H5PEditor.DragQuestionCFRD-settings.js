@@ -258,6 +258,25 @@
     return H5PEditor.findField('settings', questionParent);
   }
 
+  function resolveFollowFieldContext(questionParent, path) {
+    var settings;
+
+    if (typeof path === 'string' && path.indexOf('settings/') === 0) {
+      settings = getSettingsGroup(questionParent);
+      if (settings) {
+        return {
+          parent: settings,
+          path: path.substring('settings/'.length)
+        };
+      }
+    }
+
+    return {
+      parent: questionParent,
+      path: path
+    };
+  }
+
   /**
    * Register followField only when the field exists (showWhen may unmount branches).
    *
@@ -267,9 +286,10 @@
    */
   function safeFollowField(questionParent, path, callback) {
     var field;
+    var context = resolveFollowFieldContext(questionParent, path);
 
     try {
-      field = H5PEditor.findField(path, questionParent);
+      field = H5PEditor.findField(context.path, context.parent);
     }
     catch (err) {
       return;
@@ -280,7 +300,7 @@
     }
 
     try {
-      H5PEditor.followField(questionParent, path, callback);
+      H5PEditor.followField(context.parent, context.path, callback);
     }
     catch (err) {
       // Field removed by showWhen after findField; ignore.
