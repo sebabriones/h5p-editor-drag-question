@@ -128,11 +128,9 @@
     'settings/appearance/canvasBackground',
     'settings/appearance/dropZoneColors/dropZoneBackground',
     'settings/appearance/dropZoneColors/dropZoneHoverBackground',
-    'settings/appearance/dropZoneBorderRadius',
     'settings/appearance/dropZoneColors/useDropZoneBorder',
     'settings/appearance/dropZoneColors/dropZoneLabelColor',
     'settings/appearance/dropZoneColors/zoneIconColor',
-    'settings/appearance/draggableBorderRadius',
     'settings/appearance/draggableColors/draggableColor',
     'settings/appearance/draggableColors/draggableHoverColor',
     'settings/appearance/draggableColors/draggableDroppedColor',
@@ -259,21 +257,46 @@
   }
 
   function resolveFollowFieldContext(questionParent, path) {
-    var settings;
+    var parent = questionParent;
+    var segments;
+    var i;
+    var field;
 
-    if (typeof path === 'string' && path.indexOf('settings/') === 0) {
-      settings = getSettingsGroup(questionParent);
-      if (settings) {
-        return {
-          parent: settings,
-          path: path.substring('settings/'.length)
-        };
+    if (typeof path !== 'string' || !path) {
+      return null;
+    }
+
+    segments = path.split('/');
+
+    if (segments.length === 1) {
+      return {
+        parent: questionParent,
+        path: path
+      };
+    }
+
+    for (i = 0; i < segments.length - 1; i++) {
+      if (!segments[i]) {
+        return null;
       }
+
+      try {
+        field = H5PEditor.findField(segments[i], parent);
+      }
+      catch (err) {
+        return null;
+      }
+
+      if (!field) {
+        return null;
+      }
+
+      parent = field;
     }
 
     return {
-      parent: questionParent,
-      path: path
+      parent: parent,
+      path: segments[segments.length - 1]
     };
   }
 
@@ -287,6 +310,10 @@
   function safeFollowField(questionParent, path, callback) {
     var field;
     var context = resolveFollowFieldContext(questionParent, path);
+
+    if (!context) {
+      return;
+    }
 
     try {
       field = H5PEditor.findField(context.path, context.parent);
@@ -305,6 +332,48 @@
     catch (err) {
       // Field removed by showWhen after findField; ignore.
     }
+  }
+
+  /**
+   * Bind directly to field inputs for controls that exist but cannot be safely
+   * observed through H5PEditor.followField.
+   *
+   * @param {Object} questionParent
+   * @param {string} path
+   * @param {Function} callback
+   */
+  function safeBindFieldInputs(questionParent, path, callback) {
+    var field;
+    var context = resolveFollowFieldContext(questionParent, path);
+    var eventNamespace;
+    var $inputs;
+
+    if (!context) {
+      return;
+    }
+
+    try {
+      field = H5PEditor.findField(context.path, context.parent);
+    }
+    catch (err) {
+      return;
+    }
+
+    if (!field) {
+      return;
+    }
+
+    $inputs = field.$input && field.$input.length ?
+      field.$input :
+      (field.$item ? field.$item.find('input, textarea, select') : $());
+
+    if (!$inputs || !$inputs.length) {
+      return;
+    }
+
+    eventNamespace = '.cfrdAppearance' + path.replace(/[^a-z0-9]+/gi, '-');
+    $inputs.off('input' + eventNamespace + ' change' + eventNamespace);
+    $inputs.on('input' + eventNamespace + ' change' + eventNamespace, callback);
   }
 
   /**
@@ -880,6 +949,8 @@
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_SOLID, onAppearanceChange);
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_GRADIENT, onAppearanceChange);
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
+    safeBindFieldInputs(questionParent, 'settings/appearance/dropZoneBorderRadius', onAppearanceChange);
+    safeBindFieldInputs(questionParent, 'settings/appearance/draggableBorderRadius', onAppearanceChange);
 
     safeFollowField(
       questionParent,
