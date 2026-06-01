@@ -1202,6 +1202,18 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
     return 'image';
   };
 
+  C.normalizeLabelDisplayMode = function (mode) {
+    if (mode === 'label-with-icon' || mode === 'icon-only') {
+      return mode;
+    }
+
+    return 'label-only';
+  };
+
+  C.usesLabelVisualStack = function (mode) {
+    return mode === 'label-with-icon' || mode === 'icon-only';
+  };
+
   C.getLabel = function (text) {
     return (text.length > 32 ? text.substr(0, 32) + '...' : text);
   };
@@ -1478,7 +1490,7 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
     var params = this.params.dropZones[id];
     var labelVisual = C.getLabelVisualParams(params);
     var labelPosition = labelVisual.labelPosition || 'outside-top';
-    var labelDisplayMode = labelVisual.labelDisplayMode === 'label-with-icon' ? 'label-with-icon' : 'label-only';
+    var labelDisplayMode = C.normalizeLabelDisplayMode(labelVisual.labelDisplayMode);
     var iconSource = labelVisual.iconSource;
     var zoneImage = labelVisual.zoneImage;
     var visualHtml = '';
@@ -1487,10 +1499,10 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
     var faClasses;
 
     // Remove old label visuals and add new.
-    dropZone.$dropZone.removeClass('h5p-has-label h5p-has-label-outside h5p-has-label-inside h5p-has-visual-stack');
+    dropZone.$dropZone.removeClass('h5p-has-label h5p-has-label-outside h5p-has-label-inside h5p-has-visual-stack h5p-has-icon-only');
     dropZone.$dropZone.children('.h5p-dq-dz-label, .h5p-dz-visual-stack').remove();
     if (params.showLabel === true) {
-      if (labelDisplayMode === 'label-with-icon') {
+      if (C.usesLabelVisualStack(labelDisplayMode)) {
         alt = $('<div>' + params.label + '</div>').text();
         if (iconSource === 'fontawesome') {
           faClasses = C.getFaIconClassAttr(labelVisual.zoneIcon);
@@ -1502,9 +1514,20 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
           imgPath = H5P.getPath(zoneImage.path, H5PEditor.contentId);
           visualHtml += '<img class="h5p-dz-icon" src="' + imgPath + '" alt="' + alt + '"/>';
         }
-        visualHtml += '<div class="h5p-dq-dz-label h5p-label-pos-stack-bottom">' + params.label + '</div>';
-        $('<div class="h5p-dz-visual-stack"' + C.getVisualStackScaleStyle(labelVisual.visualScale) + '>' + visualHtml + '</div>').appendTo(dropZone.$dropZone);
+
+        if (labelDisplayMode === 'label-with-icon') {
+          visualHtml += '<div class="h5p-dq-dz-label h5p-label-pos-stack-bottom">' + params.label + '</div>';
+        }
+
+        if (visualHtml) {
+          $('<div class="h5p-dz-visual-stack"' + C.getVisualStackScaleStyle(labelVisual.visualScale) + '>' + visualHtml + '</div>').appendTo(dropZone.$dropZone);
+        }
+
         dropZone.$dropZone.addClass('h5p-has-label h5p-has-visual-stack h5p-has-label-inside');
+
+        if (labelDisplayMode === 'icon-only') {
+          dropZone.$dropZone.addClass('h5p-has-icon-only');
+        }
       }
       else {
         $('<div class="h5p-dq-dz-label h5p-label-pos-' + labelPosition + '">' + params.label + '</div>').appendTo(dropZone.$dropZone);
@@ -1667,7 +1690,7 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
 
       labelVisual = C.getLabelVisualParams(params);
       labelPosition = labelVisual.labelPosition || 'outside-top';
-      labelDisplayMode = labelVisual.labelDisplayMode === 'label-with-icon' ? 'label-with-icon' : 'label-only';
+      labelDisplayMode = C.normalizeLabelDisplayMode(labelVisual.labelDisplayMode);
       $opacityTargets = dropZone.$dropZone;
 
       if (params.showLabel === true && labelDisplayMode === 'label-only' && labelPosition === 'outside-top') {

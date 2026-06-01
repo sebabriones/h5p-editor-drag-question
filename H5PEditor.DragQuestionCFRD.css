@@ -360,6 +360,17 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   background: transparent;
 }
 
+.h5p-dq-dz.h5p-has-icon-only .h5p-dz-visual-stack {
+  justify-content: center;
+}
+
+.h5p-dq-dz.h5p-has-icon-only .h5p-dz-icon {
+  flex: 0 1 auto;
+  max-width: calc(90% * var(--dq-visual-scale, 1));
+  max-height: calc(90% * var(--dq-visual-scale, 1));
+  margin-top: 0;
+}
+
 .h5p-dq-dz .h5p-dq-dz-label > div {
   text-overflow: ellipsis;
   overflow: hidden;
