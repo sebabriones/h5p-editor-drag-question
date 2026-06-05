@@ -1,29 +1,38 @@
 {
-  "title": "Drag Question Editor",
+  "title": "Drag Question Editor (CFRD)",
+  "contentType": "Editor",
   "majorVersion": 1,
-  "minorVersion": 10,
-  "patchVersion": 27,
+  "minorVersion": 1,
+  "patchVersion": 0,
   "runnable": 0,
-  "author": "Joubel",
+  "author": "CFRD",
   "coreApi": {
     "majorVersion": 1,
     "minorVersion": 28
   },
-  "machineName": "H5PEditor.DragQuestion",
+  "machineName": "H5PEditor.DragQuestionCFRD",
   "preloadedJs": [
     {
-      "path": "H5PEditor.DragQuestion.js"
+      "path": "H5PEditor.DragQuestionCFRD.js"
     },
     {
       "path": "H5PEditor.DynamicCheckboxes.js"
+    },
+    {
+      "path": "H5PEditor.DragQuestionCFRD-settings.js"
     }
   ],
   "preloadedCss": [
     {
-      "path": "H5PEditor.DragQuestion.css"
+      "path": "H5PEditor.DragQuestionCFRD.css"
     }
   ],
   "preloadedDependencies": [
+    {
+      "machineName": "H5PEditor.ColorSelector",
+      "majorVersion": 1,
+      "minorVersion": 3
+    },
     {
       "machineName": "H5PEditor.Wizard",
       "majorVersion": 1,
@@ -55,9 +64,19 @@
       "minorVersion": 10
     },
     {
-      "machineName": "H5P.JoubelUI",
+      "machineName": "H5P.JoubelUICFRD",
       "majorVersion": 1,
-      "minorVersion": 3
+      "minorVersion": 1
+    },
+    {
+      "machineName": "H5PEditor.IconSelector",
+      "majorVersion": 1,
+      "minorVersion": 0
+    },
+    {
+      "machineName": "H5P.Instructions",
+      "majorVersion": 1,
+      "minorVersion": 0
     },
     {
       "machineName": "H5P.Components",
