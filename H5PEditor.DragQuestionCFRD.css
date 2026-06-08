@@ -10,7 +10,7 @@
   position: relative;
 }
 
-.h5p-dragquestion-editor .field-name-question > .h5p-editor-flex-wrapper {
+.h5p-dragquestioncfrd-editor .field-name-question > .h5p-editor-flex-wrapper {
   display: none;
 }
 
@@ -68,7 +68,7 @@
   cursor: auto;
 }
 
-.h5p-dragquestion-editor
+.h5p-dragquestioncfrd-editor
   .h5peditor-dragnbar
   .h5p-dragnbar-li
   .h5p-dragnbar-tooltip {
@@ -353,29 +353,29 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   content: '\f046';
 }
 
-.h5p-dragquestion-editor .h5peditor-panes > .field.dragQuestion {
+.h5p-dragquestioncfrd-editor .h5peditor-panes > .field.dragQuestion {
   background-color: #fff;
   padding: 20px;
 }
 
-.h5p-dragquestion-editor .h5peditor-form {
+.h5p-dragquestioncfrd-editor .h5peditor-form {
   border-radius: 0;
   padding: 0;
   background: #fff;
 }
 
-.h5p-dragquestion-editor .field.wizard > .h5peditor-panes > .group > .content {
+.h5p-dragquestioncfrd-editor .field.wizard > .h5peditor-panes > .group > .content {
   border: 0;
 }
 
-.h5p-dragquestion-editor .field.wizard .h5peditor-tab-settings:before {
+.h5p-dragquestioncfrd-editor .field.wizard .h5peditor-tab-settings:before {
   content: '\e916';
 }
-.h5p-dragquestion-editor .field.wizard .h5peditor-tab-task:before {
+.h5p-dragquestioncfrd-editor .field.wizard .h5peditor-tab-task:before {
   content: '\e991';
 }
 
-.h5p-dragquestion-editor .common {
+.h5p-dragquestioncfrd-editor .common {
   background-color: #fafbfc;
 }
 
@@ -383,15 +383,15 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   width: 75px;
 }
 
-.h5p-dragquestion-editor .toggle-metadata {
+.h5p-dragquestioncfrd-editor .toggle-metadata {
   top: 1.2em;
 }
 
-.h5p-dragquestion-editor .h5p-editor-dialog.h5p-metadata-wrapper {
+.h5p-dragquestioncfrd-editor .h5p-editor-dialog.h5p-metadata-wrapper {
   left: 3%;
 }
 
-.h5p-dragquestion-editor .h5p-draggable {
+.h5p-dragquestioncfrd-editor .h5p-draggable {
   --padding: 0.3em;
   line-height: 1.25em;
   padding-block: var(--padding);
@@ -399,22 +399,22 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   position: absolute;
 }
 
-.h5p-dragquestion-editor .h5p-draggable:not(.h5p-draggable--has-handle) {
+.h5p-dragquestioncfrd-editor .h5p-draggable:not(.h5p-draggable--has-handle) {
   padding-inline: var(--padding);
 }
 
-.h5p-dragquestion-editor .h5p-draggable .h5p-advanced-text {
+.h5p-dragquestioncfrd-editor .h5p-draggable .h5p-advanced-text {
   margin-inline: auto;
   width: 100%;
 }
 
-.h5p-dragquestion-editor .h5p-draggable .h5p-image {
+.h5p-dragquestioncfrd-editor .h5p-draggable .h5p-image {
   height: 100%;
   width: 100%;
 }
 
-.h5p-dragquestion-editor .h5p-draggable p,
-.h5p-dragquestion-editor .h5p-draggable span {
+.h5p-dragquestioncfrd-editor .h5p-draggable p,
+.h5p-dragquestioncfrd-editor .h5p-draggable span {
   display: inline-block;
   align-content: center;
   width: 100%;
@@ -425,11 +425,11 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   font-size: var(--h5p-theme-font-size-m);
 }
 
-.h5p-dragquestion-editor:not(
+.h5p-dragquestioncfrd-editor:not(
     :has(.h5p-question-evaluation-container.evaluation-mode)
   )
   .h5p-draggable:has(.h5p-image):hover.h5p-draggable--has-handle,
-.h5p-dragquestion-editor:not(
+.h5p-dragquestioncfrd-editor:not(
     :has(.h5p-question-evaluation-container.evaluation-mode)
   )
   .h5p-draggable:has(.h5p-image):focus.h5p-draggable--has-handle {
@@ -442,14 +442,14 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
 .h5p-dragquestion .h5p-draggable:has(.h5p-image).h5p-draggable--has-handle {
   padding-inline: var(--padding);
 }
-.h5p-dragquestion-editor
+.h5p-dragquestioncfrd-editor
   .h5p-draggable:has(.h5p-image):not(:hover):not(
     :focus
   ).h5p-draggable--has-handle::before {
   display: none;
 }
 
-.h5p-dragquestion-editor
+.h5p-dragquestioncfrd-editor
   .h5p-draggable.h5p-draggable--has-handle:has(.h5p-image):not(
     .h5p-draggable-correct
   ):not(.h5p-draggable-wrong) {
