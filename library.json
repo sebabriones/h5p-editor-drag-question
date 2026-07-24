@@ -3,7 +3,7 @@
   "contentType": "Editor",
   "majorVersion": 1,
   "minorVersion": 1,
-  "patchVersion": 0,
+  "patchVersion": 1,
   "runnable": 0,
   "author": "CFRD",
   "coreApi": {
@@ -29,9 +29,9 @@
   ],
   "preloadedDependencies": [
     {
-      "machineName": "H5PEditor.ColorSelector",
+      "machineName": "H5PEditor.ColorSelectorCFRD",
       "majorVersion": 1,
-      "minorVersion": 3
+      "minorVersion": 0
     },
     {
       "machineName": "H5PEditor.Wizard",
