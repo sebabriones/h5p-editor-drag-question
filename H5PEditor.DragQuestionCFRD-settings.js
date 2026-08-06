@@ -1,7 +1,8 @@
 /* global H5P, H5PEditor */
 /**
  * CFRD editor: proportional task size via native select + dimensions sync.
- * Sync runs only on user-driven changes (not on init) to keep Lumi preview stable.
+ * Applies scale on init so Task tab has size (needed when embedded in CP),
+ * and on later user-driven scale / mode changes.
  */
 (function ($) {
   'use strict';
@@ -419,26 +420,101 @@
     return H5PEditor.findField('useScaledTaskSize', settings);
   }
 
-  function isScaledModeEnabled(questionParent, useScaledValue) {
+  /**
+   * Select/Boolean widgets store the live value in .value; followField reads
+   * .params (often undefined). Prefer .value, then group params, then the DOM.
+   *
+   * @param {Object|null} field
+   * @param {*} fallback
+   * @returns {*}
+   */
+  function readWidgetValue(field, fallback) {
     var settings;
+
+    if (!field) {
+      return fallback;
+    }
+
+    if (field.value !== undefined) {
+      return field.value;
+    }
+
+    if (field.params !== undefined) {
+      return field.params;
+    }
+
+    if (field.$select && field.$select.length) {
+      return field.$select.val();
+    }
+
+    if (field.$input && field.$input.length) {
+      if (field.$input.attr('type') === 'checkbox') {
+        return field.$input.is(':checked');
+      }
+      return field.$input.val();
+    }
+
+    settings = field.parent && field.parent.params;
+    if (settings && field.field && field.field.name && settings[field.field.name] !== undefined) {
+      return settings[field.field.name];
+    }
+
+    return fallback;
+  }
+
+  function getCurrentScaleValue(questionParent) {
+    return readWidgetValue(getScaleField(questionParent), '1');
+  }
+
+  function getCurrentUseScaledValue(questionParent) {
+    return readWidgetValue(getUseScaledField(questionParent), true);
+  }
+
+  function isScaledModeEnabled(questionParent, useScaledValue) {
     var value = useScaledValue;
 
-    if (value === undefined) {
-      settings = getSettingsGroup(questionParent);
-      if (settings && settings.params && settings.params.useScaledTaskSize !== undefined) {
-        value = settings.params.useScaledTaskSize;
-      }
-      else {
-        value = true;
-      }
+    if (value === undefined || value === null) {
+      value = getCurrentUseScaledValue(questionParent);
     }
 
     return isTruthy(value);
   }
 
+  /**
+   * Push size into the Task widget. followField('settings/size') often never
+   * registers when Drag Question is embedded in Course Presentation, so the
+   * canvas stays on noTaskSize even though the Dimensions inputs look correct.
+   *
+   * @param {Object} questionParent Wizard / question group
+   * @param {number} width
+   * @param {number} height
+   */
+  function notifyTaskWidgetSize(questionParent, width, height) {
+    var taskWidget;
+
+    if (!questionParent || width === undefined || height === undefined) {
+      return;
+    }
+
+    try {
+      taskWidget = H5PEditor.findField('task', questionParent);
+    }
+    catch (err) {
+      taskWidget = null;
+    }
+
+    if (taskWidget && typeof taskWidget.setSize === 'function') {
+      taskWidget.setSize({
+        width: width,
+        height: height
+      });
+    }
+  }
+
   function applySizeToDimensionsField(sizeField, width, height) {
     var value;
     var i;
+    var questionParent;
 
     if (!sizeField) {
       return;
@@ -462,6 +538,10 @@
         sizeField.changes[i](width, height);
       }
     }
+
+    // settings Group → wizard (question parent)
+    questionParent = sizeField.parent && sizeField.parent.parent;
+    notifyTaskWidgetSize(questionParent, width, height);
   }
 
   function setDimensionsLocked(sizeField, locked) {
@@ -510,14 +590,49 @@
 
   function bindScaleSelectChange(questionParent) {
     var scaleField = getScaleField(questionParent);
+    var $select;
 
-    if (!scaleField || !scaleField.$item || scaleField._cfrdUserChangeBound) {
+    if (!scaleField || scaleField._cfrdUserChangeBound) {
+      return;
+    }
+
+    $select = scaleField.$select && scaleField.$select.length ?
+      scaleField.$select :
+      (scaleField.$item ? scaleField.$item.find('select') : $());
+
+    if (!$select || !$select.length) {
       return;
     }
 
     scaleField._cfrdUserChangeBound = true;
-    scaleField.$item.find('select').on('change', function () {
+    $select.on('change', function () {
       applyScaleToSizeField(questionParent, $(this).val());
+    });
+  }
+
+  function bindUseScaledCheckboxChange(questionParent) {
+    var useScaledField = getUseScaledField(questionParent);
+    var $input;
+
+    if (!useScaledField || useScaledField._cfrdUserChangeBound) {
+      return;
+    }
+
+    $input = useScaledField.$input && useScaledField.$input.length ?
+      useScaledField.$input :
+      (useScaledField.$item ? useScaledField.$item.find('input[type="checkbox"]') : $());
+
+    if (!$input || !$input.length) {
+      return;
+    }
+
+    useScaledField._cfrdUserChangeBound = true;
+    $input.on('change', function () {
+      var enabled = $(this).is(':checked');
+      updateTaskSizeScaleUI(questionParent, enabled);
+      if (enabled) {
+        applyScaleToSizeField(questionParent, getCurrentScaleValue(questionParent));
+      }
     });
   }
 
@@ -980,39 +1095,90 @@
   }
 
   function setupTaskSizeScaleSync(questionParent) {
-    var scaleFollowCount = 0;
-    var useScaledFollowCount = 0;
-
     if (!questionParent || questionParent._cfrdTaskSizeSyncSetup) {
       return;
     }
 
     questionParent._cfrdTaskSizeSyncSetup = true;
 
-    H5PEditor.followField(questionParent, 'settings/useScaledTaskSize', function (value) {
-      useScaledFollowCount += 1;
-      updateTaskSizeScaleUI(questionParent, value);
+    H5PEditor.followField(questionParent, 'settings/useScaledTaskSize', function () {
+      // followField passes field.params (empty for Boolean); read .value / DOM.
+      var enabled = getCurrentUseScaledValue(questionParent);
+      bindUseScaledCheckboxChange(questionParent);
+      updateTaskSizeScaleUI(questionParent, enabled);
 
-      if (useScaledFollowCount > 1 && isTruthy(value)) {
-        var scaleField = getScaleField(questionParent);
-        var currentScale = scaleField && scaleField.params !== undefined ?
-          scaleField.params :
-          '1';
-        applyScaleToSizeField(questionParent, currentScale);
+      if (isTruthy(enabled)) {
+        applyScaleToSizeField(questionParent, getCurrentScaleValue(questionParent));
       }
     });
 
-    H5PEditor.followField(questionParent, 'settings/taskSizeScale', function (value) {
-      scaleFollowCount += 1;
+    H5PEditor.followField(questionParent, 'settings/taskSizeScale', function () {
+      // followField passes field.params (empty for Select); read .value / DOM.
+      var scaleValue = getCurrentScaleValue(questionParent);
       bindScaleSelectChange(questionParent);
+      bindUseScaledCheckboxChange(questionParent);
+      updateTaskSizeScaleUI(questionParent);
 
-      if (scaleFollowCount === 1) {
-        updateTaskSizeScaleUI(questionParent);
+      if (isScaledModeEnabled(questionParent)) {
+        applyScaleToSizeField(questionParent, scaleValue);
+      }
+    });
+  }
+
+  /**
+   * Bind scale UI even if an earlier ready callback aborted the editor queue.
+   * Retries briefly until the Settings fields exist in the DOM.
+   *
+   * @param {Object} questionParent
+   */
+  function scheduleTaskSizeScaleBind(questionParent) {
+    var attempts = 0;
+    var maxAttempts = 20;
+
+    function tryBind() {
+      var scaleField;
+      var useScaledField;
+      var sizeField;
+      var enabled;
+
+      attempts += 1;
+      scaleField = getScaleField(questionParent);
+      useScaledField = getUseScaledField(questionParent);
+      sizeField = getSizeField(questionParent);
+
+      if (!scaleField || !useScaledField || !sizeField || !sizeField.$inputs) {
+        if (attempts < maxAttempts) {
+          setTimeout(tryBind, 50);
+        }
         return;
       }
 
-      applyScaleToSizeField(questionParent, value);
-    });
+      bindScaleSelectChange(questionParent);
+      bindUseScaledCheckboxChange(questionParent);
+      enabled = getCurrentUseScaledValue(questionParent);
+      updateTaskSizeScaleUI(questionParent, enabled);
+
+      if (isTruthy(enabled)) {
+        applyScaleToSizeField(questionParent, getCurrentScaleValue(questionParent));
+      }
+      else if (sizeField.params && sizeField.params.width !== undefined) {
+        notifyTaskWidgetSize(
+          questionParent,
+          parseInt(sizeField.params.width, 10),
+          parseInt(sizeField.params.height, 10)
+        );
+      }
+      else if (sizeField.$inputs && sizeField.$inputs.length >= 2) {
+        notifyTaskWidgetSize(
+          questionParent,
+          parseInt(sizeField.$inputs.eq(0).val(), 10),
+          parseInt(sizeField.$inputs.eq(1).val(), 10)
+        );
+      }
+    }
+
+    setTimeout(tryBind, 0);
+    setTimeout(tryBind, 100);
   }
 
   function scheduleApplyEditorAppearance(questionParent) {
@@ -1035,6 +1201,7 @@
     H5PEditor.DragQuestionCFRD = function (parent, field, params, setValue) {
       Original.call(this, parent, field, params, setValue);
       setupTaskSizeScaleSync(parent);
+      scheduleTaskSizeScaleBind(parent);
       setupAppearanceSync(parent);
     };
 
@@ -1044,6 +1211,7 @@
       var parent = this.parent;
 
       originalSetActive.call(this);
+      // Do not reschedule scale bind here: applyScale → setSize → setActive loops.
       scheduleApplyEditorAppearance(parent);
     };
 

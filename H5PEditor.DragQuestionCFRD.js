@@ -45,13 +45,61 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
       that.setSize(params);
     });
 
-    // Need the override background opacity
-    this.backgroundOpacity = parent.parent.params.backgroundOpacity;
-    this.backgroundOpacity = (this.backgroundOpacity === undefined || this.backgroundOpacity.trim() === '') ? undefined : this.backgroundOpacity;
+    // Need the override background opacity.
+    // When embedded in a Library field (e.g. Course Presentation), content params
+    // live under parent.parent.params.params — not parent.parent.params.
+    (function initBackgroundOpacity() {
+      var root = parent.parent && parent.parent.params;
+      var raw;
 
-    // Update opacity for all dropzones/draggables when global background opacity is changed
+      if (!root) {
+        that.backgroundOpacity = undefined;
+        return;
+      }
+
+      raw = root.backgroundOpacity;
+      if (raw === undefined && root.params) {
+        raw = root.params.backgroundOpacity;
+        if (raw === undefined && root.params.behaviour) {
+          raw = root.params.behaviour.backgroundOpacity;
+        }
+      }
+      if (raw === undefined && root.behaviour) {
+        raw = root.behaviour.backgroundOpacity;
+      }
+
+      if (raw === undefined || raw === null) {
+        that.backgroundOpacity = undefined;
+        return;
+      }
+
+      raw = String(raw).trim();
+      that.backgroundOpacity = (raw === '') ? undefined : raw;
+    })();
+
+    // Update opacity when the behaviour field changes. Must not throw: a failed
+    // ready callback aborts the rest of the editor ready queue (scale sync, etc.).
     parent.ready(function () {
-      H5PEditor.findField('../behaviour/backgroundOpacity', parent).$item.find('input').on('change', function () {
+      var opacityField;
+      var $input;
+
+      try {
+        opacityField = H5PEditor.findField('../behaviour/backgroundOpacity', parent);
+      }
+      catch (err) {
+        opacityField = null;
+      }
+
+      if (!opacityField || !opacityField.$item) {
+        return;
+      }
+
+      $input = opacityField.$item.find('input');
+      if (!$input.length) {
+        return;
+      }
+
+      $input.on('change', function () {
         that.backgroundOpacity = $(this).val().trim();
         that.backgroundOpacity = (that.backgroundOpacity === '') ? undefined : that.backgroundOpacity;
         that.updateAllElementsOpacity(that.elements, that.params.elements, 'element');
@@ -252,12 +300,71 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
 
   /**
    * Set current dimensions.
+   * When size arrives after the Task tab was opened empty, start the canvas.
    *
    * @param {Object} params
    * @returns {undefined}
    */
   C.prototype.setSize = function (params) {
+    var previous = this.size;
+    var unchanged = previous && params &&
+      previous.width === params.width &&
+      previous.height === params.height;
+
     this.size = params;
+
+    // Size may become available after setActive already bailed out (common when
+    // Drag Question is embedded in Course Presentation). Retry activation once
+    // the dimensions actually change — avoids a setSize ↔ setActive loop.
+    if (
+      !unchanged &&
+      this.$editor !== undefined &&
+      this.size !== undefined &&
+      this.size.width !== undefined
+    ) {
+      this.setActive();
+    }
+  };
+
+  /**
+   * Read task size from the Settings dimensions field when followField
+   * never populated this.size (common when embedded in Course Presentation).
+   *
+   * @returns {Object|undefined}
+   */
+  C.prototype.readSizeFromSettingsField = function () {
+    var sizeField;
+    var width;
+    var height;
+
+    try {
+      sizeField = H5PEditor.findField('settings/size', this.parent);
+    }
+    catch (err) {
+      sizeField = null;
+    }
+
+    if (!sizeField) {
+      return undefined;
+    }
+
+    if (sizeField.params && sizeField.params.width !== undefined) {
+      width = parseInt(sizeField.params.width, 10);
+      height = parseInt(sizeField.params.height, 10);
+      if (!isNaN(width) && !isNaN(height)) {
+        return { width: width, height: height };
+      }
+    }
+
+    if (sizeField.$inputs && sizeField.$inputs.length >= 2) {
+      width = parseInt(sizeField.$inputs.eq(0).val(), 10);
+      height = parseInt(sizeField.$inputs.eq(1).val(), 10);
+      if (!isNaN(width) && !isNaN(height)) {
+        return { width: width, height: height };
+      }
+    }
+
+    return undefined;
   };
 
   /**
@@ -267,6 +374,15 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
    */
   C.prototype.setActive = function () {
     var that = this;
+    var fromSettings;
+
+    if (this.size === undefined || this.size.width === undefined) {
+      fromSettings = this.readSizeFromSettingsField();
+      if (fromSettings) {
+        this.size = fromSettings;
+      }
+    }
+
     if (this.size === undefined || this.size.width === undefined) {
       return;
     }
