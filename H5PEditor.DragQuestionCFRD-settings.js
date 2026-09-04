@@ -42,7 +42,11 @@
     draggableBorderRadius: '0.25em',
     draggableBorderWidth: '0',
     draggableBorderStyle: 'none',
-    draggableBordersEnabled: '0'
+    draggableBordersEnabled: '0',
+    feedbackIconCorrectColor: '#255c41',
+    feedbackIconWrongColor: '#b71c1c',
+    feedbackIconSize: '0.75em',
+    feedbackIconVerticalAlign: 'bottom'
   };
 
   var VALID_BORDER_STYLES = ['solid', 'dashed', 'dotted', 'double'];
@@ -136,7 +140,10 @@
     'settings/appearance/draggableColors/draggableHoverColor',
     'settings/appearance/draggableColors/draggableDroppedColor',
     'settings/appearance/draggableColors/draggableCorrectColor',
-    'settings/appearance/draggableColors/draggableWrongColor'
+    'settings/appearance/draggableColors/draggableWrongColor',
+    'settings/appearance/feedbackIcons/correctColor',
+    'settings/appearance/feedbackIcons/wrongColor',
+    'settings/appearance/feedbackIcons/verticalAlign'
   ];
 
   /** Mounted only when useGradientBackground is false. */
@@ -214,8 +221,17 @@
     draggableBorderRadius: '--dq-draggable-border-radius',
     draggableBorderWidth: '--dq-draggable-border-width',
     draggableBorderStyle: '--dq-draggable-border-style',
-    draggableBordersEnabled: '--dq-draggable-borders-enabled'
+    draggableBordersEnabled: '--dq-draggable-borders-enabled',
+    feedbackIconCorrectColor: '--dq-feedback-icon-correct-color',
+    feedbackIconWrongColor: '--dq-feedback-icon-wrong-color',
+    feedbackIconSize: '--dq-feedback-icon-size'
   };
+
+  var FEEDBACK_ICON_VALIGN_CLASSES = [
+    'h5p-dq-feedback-icon-valign-top',
+    'h5p-dq-feedback-icon-valign-center',
+    'h5p-dq-feedback-icon-valign-bottom'
+  ];
 
   function normalizeScale(value) {
     var scale = parseFloat(value);
@@ -770,6 +786,80 @@
     return 'solid';
   }
 
+  function formatFeedbackIconSizeEm(size, fallback) {
+    var n = parseFloat(size);
+
+    if (isNaN(n)) {
+      n = fallback;
+    }
+
+    if (n < 0.5) {
+      n = 0.5;
+    }
+
+    if (n > 3) {
+      n = 3;
+    }
+
+    return n + 'em';
+  }
+
+  function normalizeFeedbackIconVerticalAlign(align) {
+    if (align === 'top' || align === 'center' || align === 'bottom') {
+      return align;
+    }
+
+    return 'bottom';
+  }
+
+  function applyFeedbackIconAppearance(appearance, flat) {
+    var icons;
+
+    appearance = appearance || {};
+    icons = appearance.feedbackIcons || {};
+
+    if (icons.correctColor !== undefined && icons.correctColor !== null && icons.correctColor !== '') {
+      flat.feedbackIconCorrectColor = icons.correctColor;
+    }
+
+    if (icons.wrongColor !== undefined && icons.wrongColor !== null && icons.wrongColor !== '') {
+      flat.feedbackIconWrongColor = icons.wrongColor;
+    }
+
+    if (icons.size !== undefined && icons.size !== null && icons.size !== '') {
+      flat.feedbackIconSize = formatFeedbackIconSizeEm(icons.size, 0.75);
+    }
+
+    if (icons.verticalAlign !== undefined && icons.verticalAlign !== null && icons.verticalAlign !== '') {
+      flat.feedbackIconVerticalAlign = normalizeFeedbackIconVerticalAlign(icons.verticalAlign);
+    }
+  }
+
+  function applyFeedbackIconVerticalAlign($container, align) {
+    var normalized = normalizeFeedbackIconVerticalAlign(align);
+    var i;
+    var el;
+    var j;
+
+    if (!$container || !$container.length) {
+      return;
+    }
+
+    for (i = 0; i < $container.length; i++) {
+      el = $container[i];
+
+      if (!el || !el.classList) {
+        continue;
+      }
+
+      for (j = 0; j < FEEDBACK_ICON_VALIGN_CLASSES.length; j++) {
+        el.classList.remove(FEEDBACK_ICON_VALIGN_CLASSES[j]);
+      }
+
+      el.classList.add('h5p-dq-feedback-icon-valign-' + normalized);
+    }
+  }
+
   function applyDropZoneBorderAppearance(dropZone, appearance, flat) {
     var borderSettings;
     var normal;
@@ -942,6 +1032,8 @@
       }
     }
 
+    applyFeedbackIconAppearance(appearance, flat);
+
     return flat;
   }
 
@@ -971,6 +1063,9 @@
       }
     }
 
+    merged.feedbackIconVerticalAlign =
+      normalizeFeedbackIconVerticalAlign(merged.feedbackIconVerticalAlign);
+
     return merged;
   }
 
@@ -997,6 +1092,8 @@
         }
       }
     }
+
+    applyFeedbackIconVerticalAlign($container, merged.feedbackIconVerticalAlign);
 
     return merged;
   }
@@ -1066,6 +1163,7 @@
     safeFollowFields(questionParent, APPEARANCE_FOLLOW_PATHS_BORDER, onAppearanceChange);
     safeBindFieldInputs(questionParent, 'settings/appearance/dropZoneBorderRadius', onAppearanceChange);
     safeBindFieldInputs(questionParent, 'settings/appearance/draggableBorderRadius', onAppearanceChange);
+    safeBindFieldInputs(questionParent, 'settings/appearance/feedbackIcons/size', onAppearanceChange);
 
     safeFollowField(
       questionParent,
