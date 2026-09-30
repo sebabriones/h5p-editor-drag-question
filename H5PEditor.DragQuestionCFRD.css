@@ -158,7 +158,7 @@
   text-align: center;
   background: var(--dq-draggable-bg, #ddd);
   color: var(--dq-draggable-color, #333);
-  box-shadow: 0 0 0.3em rgba(0,0,0,0.2);
+  box-shadow: var(--dq-draggable-box-shadow, none);
   z-index: 3;
   -webkit-user-select: none;
   -moz-user-select: none;

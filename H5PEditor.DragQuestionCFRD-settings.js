@@ -39,6 +39,7 @@
     draggableWrongBackground: '#f7d0d0',
     draggableWrongBorder: '#f7d0d0',
     draggableWrongColor: '#b71c1c',
+    draggableBoxShadow: 'none',
     draggableBorderRadius: '0.25em',
     draggableBorderWidth: '0',
     draggableBorderStyle: 'none',
@@ -141,6 +142,7 @@
     'settings/appearance/draggableColors/draggableDroppedColor',
     'settings/appearance/draggableColors/draggableCorrectColor',
     'settings/appearance/draggableColors/draggableWrongColor',
+    'settings/appearance/draggableColors/showDraggableShadow',
     'settings/appearance/feedbackIcons/correctColor',
     'settings/appearance/feedbackIcons/wrongColor',
     'settings/appearance/feedbackIcons/verticalAlign'
@@ -218,6 +220,7 @@
     draggableWrongBackground: '--dq-draggable-wrong-bg',
     draggableWrongBorder: '--dq-draggable-wrong-border',
     draggableWrongColor: '--dq-draggable-wrong-color',
+    draggableBoxShadow: '--dq-draggable-box-shadow',
     draggableBorderRadius: '--dq-draggable-border-radius',
     draggableBorderWidth: '--dq-draggable-border-width',
     draggableBorderStyle: '--dq-draggable-border-style',
@@ -929,6 +932,7 @@
 
     flat.draggableBorderRadius = formatBorderRadiusEm(radius, BORDER_RADIUS_DEFAULT);
     useBorder = isTruthy(draggable.useDraggableBorder);
+    flat.draggableBoxShadow = isTruthy(draggable.showDraggableShadow) ? '0 0 0.3em rgba(0,0,0,0.2)' : 'none';
     flat.useDraggableBorder = useBorder;
     flat.draggableBordersEnabled = useBorder ? '1' : '0';
 
