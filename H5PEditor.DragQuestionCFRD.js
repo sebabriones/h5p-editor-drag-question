@@ -1649,7 +1649,7 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
         $('<div class="h5p-dq-dz-label h5p-label-pos-' + labelPosition + '">' + params.label + '</div>').appendTo(dropZone.$dropZone);
         dropZone.$dropZone.addClass('h5p-has-label');
 
-        if (labelPosition === 'outside-top') {
+        if (labelPosition === 'outside-top' || labelPosition === 'outside-bottom') {
           dropZone.$dropZone.addClass('h5p-has-label-outside');
         }
         else {
@@ -1672,13 +1672,12 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
       label: params.label
     };
 
-    var $opacityTargets = dropZone.$dropZone;
-
-    if (params.showLabel === true && labelDisplayMode === 'label-only' && labelPosition === 'outside-top') {
-      $opacityTargets = dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label'));
-    }
-
-    C.setOpacity($opacityTargets, 'background', params.backgroundOpacity);
+    // Outside labels stay plain text (no background opacity wash).
+    dropZone.$dropZone.children('.h5p-dq-dz-label').css({
+      backgroundColor: '',
+      backgroundImage: ''
+    });
+    C.setOpacity(dropZone.$dropZone, 'background', params.backgroundOpacity);
   };
 
   /**
@@ -1787,10 +1786,6 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
     var i;
     var dropZone;
     var params;
-    var labelVisual;
-    var labelPosition;
-    var labelDisplayMode;
-    var $opacityTargets;
 
     if (this.dnb === undefined || !this.dropZones || !this.elements) {
       return;
@@ -1804,16 +1799,11 @@ H5PEditor.widgets.dragQuestionCFRD = H5PEditor.DragQuestionCFRD = (function ($, 
         continue;
       }
 
-      labelVisual = C.getLabelVisualParams(params);
-      labelPosition = labelVisual.labelPosition || 'outside-top';
-      labelDisplayMode = C.normalizeLabelDisplayMode(labelVisual.labelDisplayMode);
-      $opacityTargets = dropZone.$dropZone;
-
-      if (params.showLabel === true && labelDisplayMode === 'label-only' && labelPosition === 'outside-top') {
-        $opacityTargets = dropZone.$dropZone.add(dropZone.$dropZone.children('.h5p-dq-dz-label'));
-      }
-
-      C.setOpacity($opacityTargets, 'background', params.backgroundOpacity);
+      dropZone.$dropZone.children('.h5p-dq-dz-label').css({
+        backgroundColor: '',
+        backgroundImage: ''
+      });
+      C.setOpacity(dropZone.$dropZone, 'background', params.backgroundOpacity);
       C.setOpacity(dropZone.$dropZone, 'borderColor', params.backgroundOpacity);
     }
 

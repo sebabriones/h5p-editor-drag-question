@@ -224,9 +224,6 @@
   border-color: var(--dq-dropzone-hover-border, var(--dq-dropzone-border, rgba(255,255,255,0.7)));
 }
 
-.h5p-dq-dz.h5p-has-label-outside {
-  border-radius: 0 0 var(--dq-dropzone-border-radius, 0.25em) var(--dq-dropzone-border-radius, 0.25em);
-}
 .h5p-dq-dz .joubel-tip-container {
   position: absolute;
   right: 0.5em;
@@ -376,14 +373,38 @@ a.h5peditor-fd-button.h5peditor-remove:hover {
   overflow: hidden;
 }
 
-.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top {
+/* Outside labels: plain text spanning the dropzone so editor text-align works. */
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top,
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-bottom {
   z-index: 1;
-  left: -0.1em;
-  right: -0.1em;
-  bottom: 100%;
+  left: 0;
+  right: 0;
   max-width: none;
-  background: #ddd;
-  border-radius: 0.5em 0.5em 0 0;
+  width: auto;
+  box-sizing: border-box;
+  padding: 0.15em 0.25em;
+  background: transparent;
+  border-radius: 0;
+  white-space: normal;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 0.2em;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-bottom {
+  top: 100%;
+  bottom: auto;
+  margin-top: 0.2em;
+}
+
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top > div,
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-bottom > div,
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-top > p,
+.h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-outside-bottom > p {
+  max-width: 100%;
 }
 
 .h5p-dq-dz .h5p-dq-dz-label.h5p-label-pos-top-left {
